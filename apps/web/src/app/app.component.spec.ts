@@ -1,25 +1,15 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { Actions } from '@ngrx/effects';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { TranslateService } from '@ngx-translate/core';
 import {
     EpgRuntimeBridgeService,
     EpgService,
 } from '@iptvnator/epg/data-access';
-import {
-    WorkspaceShellContextDrawerService,
-    WORKSPACE_SHELL_ACTIONS,
-} from '@iptvnator/workspace/shell/util';
 import { MockProvider } from 'ng-mocks';
-import { EMPTY, of } from 'rxjs';
-import {
-    DataService,
-    EpgSourceSettingsService,
-    SettingsStore,
-    RuntimeCapabilitiesService,
-} from '@iptvnator/services';
+import { of } from 'rxjs';
+import { EpgSourceSettingsService, SettingsStore } from '@iptvnator/services';
 import {
     Language,
     Settings,
@@ -31,7 +21,7 @@ import {
 } from '@iptvnator/shared/interfaces';
 import { PlaylistActions } from '@iptvnator/m3u-state';
 import { AppComponent } from './app.component';
-import { ElectronServiceStub } from './services/electron.service.stub';
+import { PlaybackKeepAwakeService } from './services/playback-keep-awake.service';
 import { SettingsService } from './services/settings.service';
 
 jest.spyOn(global.console, 'error').mockImplementation(() => {
@@ -75,14 +65,9 @@ describe('AppComponent', () => {
     let snackBar: MatSnackBar;
     let store: MockStore;
     let translateService: TranslateService;
-    let runtimeCapabilities: Partial<RuntimeCapabilitiesService>;
     let epgBridge: Partial<EpgRuntimeBridgeService>;
 
     beforeEach(waitForAsync(() => {
-        runtimeCapabilities = {
-            isElectron: true,
-            isMacOS: false,
-        };
         epgBridge = {
             checkFreshness: jest.fn().mockResolvedValue({
                 freshUrls: [],
@@ -97,20 +82,8 @@ describe('AppComponent', () => {
             providers: [
                 provideMockStore(),
                 {
-                    provide: Actions,
-                    useValue: new Actions(EMPTY),
-                },
-                {
-                    provide: DataService,
-                    useClass: ElectronServiceStub,
-                },
-                {
                     provide: SettingsService,
                     useClass: MockSettingsService,
-                },
-                {
-                    provide: RuntimeCapabilitiesService,
-                    useValue: runtimeCapabilities as RuntimeCapabilitiesService,
                 },
                 MockProvider(EpgService, {
                     fetchEpg: jest.fn(),
@@ -119,15 +92,12 @@ describe('AppComponent', () => {
                     provide: EpgRuntimeBridgeService,
                     useValue: epgBridge,
                 },
+                MockProvider(PlaybackKeepAwakeService, {
+                    start: jest.fn(),
+                }),
                 MockProvider(Router, {
                     navigateByUrl: jest.fn(),
                 }),
-                {
-                    // Root-provided in production; stubbed because the spec's
-                    // Router mock has no `events` stream for the real service.
-                    provide: WorkspaceShellContextDrawerService,
-                    useValue: { isOpen: () => false },
-                },
                 MockProvider(MatSnackBar, {
                     open: jest.fn(),
                 }),
@@ -136,16 +106,6 @@ describe('AppComponent', () => {
                     setDefaultLang: jest.fn(),
                     use: jest.fn(),
                 }),
-                {
-                    provide: WORKSPACE_SHELL_ACTIONS,
-                    useValue: {
-                        openAddPlaylistDialog: jest.fn(),
-                        openGlobalRecent: jest.fn(),
-                        openGlobalSearch: jest.fn(),
-                        openAccountInfo: jest.fn(),
-                        openStalkerAccountInfo: jest.fn(),
-                    },
-                },
             ],
         })
             .overrideComponent(AppComponent, {

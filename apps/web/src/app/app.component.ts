@@ -1,36 +1,16 @@
-import {
-    Component,
-    effect,
-    HostBinding,
-    inject,
-    OnInit,
-    signal,
-} from '@angular/core';
+import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router, RouterOutlet } from '@angular/router';
-import { Actions, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 import {
     EpgRuntimeBridgeService,
     EpgService,
 } from '@iptvnator/epg/data-access';
-import {
-    WorkspaceShellContextDrawerService,
-    WORKSPACE_SHELL_ACTIONS,
-} from '@iptvnator/workspace/shell/util';
 import { EpgProgressPanelComponent } from '@iptvnator/ui/epg/progress-panel';
-import { WindowControlsComponent } from '@iptvnator/ui/components';
-import { PlaylistActions, selectAllPlaylistsMeta } from '@iptvnator/m3u-state';
-import { filter, take } from 'rxjs';
+import { PlaylistActions } from '@iptvnator/m3u-state';
+import { SettingsStore, EpgSourceSettingsService } from '@iptvnator/services';
 import {
-    DataService,
-    RuntimeCapabilitiesService,
-    SettingsStore,
-    EpgSourceSettingsService,
-} from '@iptvnator/services';
-import {
-    AUTO_UPDATE_PLAYLISTS,
     Language,
     Settings,
     STORE_KEY,
@@ -39,8 +19,6 @@ import {
 } from '@iptvnator/shared/interfaces';
 import { SettingsService } from './services/settings.service';
 import { PlaybackKeepAwakeService } from './services/playback-keep-awake.service';
-import { PlaylistOpenRequestService } from './services/playlist-open-request.service';
-import { AppUpdateNotificationPanelComponent } from './app-update-notification-panel.component';
 import { AppStartupStatusComponent } from './app-startup-status.component';
 
 const debugAppComponent = createDevLogger('AppComponent');
@@ -50,22 +28,12 @@ const debugAppComponent = createDevLogger('AppComponent');
     templateUrl: './app.component.html',
     imports: [
         AppStartupStatusComponent,
-        AppUpdateNotificationPanelComponent,
         EpgProgressPanelComponent,
         RouterOutlet,
-        WindowControlsComponent,
     ],
 })
 export class AppComponent implements OnInit {
     readonly routeReady = signal(false);
-    @HostBinding('class.macos-platform') get isMacOS() {
-        return this.runtime.isMacOS;
-    }
-    get usesCustomWindowControls() {
-        return this.runtime.usesCustomWindowControls;
-    }
-    private actions$ = inject(Actions);
-    private dataService = inject(DataService);
     private epgBridge = inject(EpgRuntimeBridgeService);
     private epgService = inject(EpgService);
     private snackBar = inject(MatSnackBar);
@@ -76,52 +44,19 @@ export class AppComponent implements OnInit {
     private settingsStore = inject(SettingsStore);
     private readonly epgSources = inject(EpgSourceSettingsService);
     private playbackKeepAwake = inject(PlaybackKeepAwakeService);
-    private playlistOpenRequests = inject(PlaylistOpenRequestService);
-    private runtime = inject(RuntimeCapabilitiesService);
-    private readonly workspaceShellActions = inject(WORKSPACE_SHELL_ACTIONS);
-    private readonly contextDrawer = inject(WorkspaceShellContextDrawerService);
 
     /** Default language as fallback */
     private readonly DEFAULT_LANG = Language.ENGLISH;
 
     constructor() {
-        // Body-level class (like 'dark-theme') so layout adjustments also
-        // reach content rendered outside app-root, e.g. cdk-overlay content.
-        if (this.runtime.usesCustomWindowControls) {
-            document.body.classList.add('frameless-platform');
-        }
-
-        // Playlist files the OS asked us to open (command line argument, file
-        // association, macOS `open-file`) are resolved in the main process and
-        // queued there until the renderer subscribes. Start listening as early
-        // as possible so a first-launch file is not delayed behind app init.
-        this.playlistOpenRequests.start();
-
         // Keep the display awake while a built-in player is playing video
-        // (Electron powerSaveBlocker / PWA Screen Wake Lock, issue #1095).
+        // (PWA Screen Wake Lock, issue #1095).
         this.playbackKeepAwake.start();
 
         effect(() => {
             const size = this.settingsStore.coverSize?.() ?? 'medium';
             document.documentElement.dataset.coverSize = size;
         });
-
-        if (this.runtime.isElectron) {
-            document.addEventListener('keydown', (event) => {
-                if (event.ctrlKey || event.metaKey) {
-                    // While the phone context drawer is modal, workspace
-                    // shortcuts must not navigate away behind it — same gate
-                    // as Ctrl/Cmd+F, Ctrl/Cmd+K, and the shortcuts dialog.
-                    if (this.contextDrawer.isOpen()) {
-                        return;
-                    }
-                    if (event.key === 'r') {
-                        event.preventDefault();
-                        this.workspaceShellActions.openGlobalRecent();
-                    }
-                }
-            });
-        }
     }
 
     ngOnInit() {
@@ -129,7 +64,6 @@ export class AppComponent implements OnInit {
         this.translate.setDefaultLang(this.DEFAULT_LANG);
 
         this.initSettings();
-        this.triggerAutoUpdatePlaylists();
     }
 
     /**
@@ -141,10 +75,6 @@ export class AppComponent implements OnInit {
             .getValueFromLocalStorage<Settings>(STORE_KEY.Settings)
             .subscribe((settings: Settings) => {
                 if (settings && Object.keys(settings).length > 0) {
-                    // No need to send settings to Electron on init
-                    // Settings are stored in IndexedDB and loaded by the settings store
-                    // Only specific Electron settings (MPV/VLC paths) are sent when changed in settings component
-
                     const resolvedLang = settings.language ?? this.DEFAULT_LANG;
                     this.translate.use(resolvedLang);
                     // Mirror the active language to localStorage so the next
@@ -246,43 +176,5 @@ export class AppComponent implements OnInit {
             // Fallback: fetch all URLs if freshness check fails
             await fetchCurrentSources(urls);
         }
-    }
-
-    /**
-     * Triggers auto-update for playlists that have autoRefresh enabled
-     */
-    private triggerAutoUpdatePlaylists(): void {
-        // Wait for playlists to be loaded successfully
-        this.actions$
-            .pipe(
-                ofType(PlaylistActions.loadPlaylistsSuccess),
-                take(1) // Only trigger once on app startup
-            )
-            .subscribe(() => {
-                // Get all playlists from store
-                this.store
-                    .select(selectAllPlaylistsMeta)
-                    .pipe(
-                        take(1),
-                        filter((playlists) => playlists.length > 0)
-                    )
-                    .subscribe((playlists) => {
-                        // Filter playlists with autoRefresh enabled
-                        const playlistsToUpdate = playlists.filter(
-                            (playlist) => playlist.autoRefresh === true
-                        );
-
-                        // Trigger auto-update if there are playlists to update
-                        if (playlistsToUpdate.length > 0) {
-                            debugAppComponent(
-                                `Auto-updating ${playlistsToUpdate.length} playlist(s) on startup`
-                            );
-                            this.dataService.sendIpcEvent(
-                                AUTO_UPDATE_PLAYLISTS,
-                                playlistsToUpdate
-                            );
-                        }
-                    });
-            });
     }
 }
