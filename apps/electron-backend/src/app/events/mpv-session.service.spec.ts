@@ -354,7 +354,7 @@ describe('external player shutdown on app quit', () => {
             url: 'https://portal.example/ch/1234',
             headers: {
                 'X-User-Agent':
-                    'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG250',
+                    'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG254',
             },
         });
 
@@ -367,7 +367,7 @@ describe('external player shutdown on app quit', () => {
         // mpv parses the option as a comma-separated list; the comma inside
         // the MAG user agent must arrive escaped or the header is truncated
         // and Stalker portals reject the stream with HTTP 400.
-        expect(headerArg).toContain('(KHTML\\, like Gecko) MAG250');
+        expect(headerArg).toContain('(KHTML\\, like Gecko) MAG254');
         expect(headerArg).not.toContain('(KHTML, like Gecko)');
     });
 
@@ -406,7 +406,7 @@ describe('external player shutdown on app quit', () => {
             url: 'https://portal.example/ch/1234',
             headers: {
                 'X-User-Agent':
-                    'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG250',
+                    'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG254',
             },
         });
 
@@ -424,7 +424,7 @@ describe('external player shutdown on app quit', () => {
         // intact: mpv re-parses the property as a comma-separated stringlist
         // on its side, so an unescaped comma truncates the MAG user agent.
         expect(setHeaderFields).toBeDefined();
-        expect(setHeaderFields?.[2]).toContain('(KHTML\\, like Gecko) MAG250');
+        expect(setHeaderFields?.[2]).toContain('(KHTML\\, like Gecko) MAG254');
         expect(setHeaderFields?.[2]).not.toContain('(KHTML, like Gecko)');
 
         shutdownMpvSession();

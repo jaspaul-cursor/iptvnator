@@ -48,7 +48,7 @@ describe('StalkerAuthApi', () => {
         );
     }
 
-    it('reports one coherent MAG250 in the profile request', async () => {
+    it('reports one coherent MAG254 in the profile request', async () => {
         sendIpcEvent
             .mockResolvedValueOnce({ js: { token: 'TOKEN-1', random: 'r1' } })
             .mockResolvedValueOnce({ js: { status: 0 } });
@@ -59,8 +59,8 @@ describe('StalkerAuthApi', () => {
         expect(profile[1].params).toEqual(
             expect.objectContaining({
                 // `stb_type` used to go out as an empty string.
-                stb_type: 'MAG250',
-                ver: expect.stringContaining('0.2.18-r14-pub-250'),
+                stb_type: 'MAG254',
+                ver: expect.stringContaining('0.2.18-r23-pub-254'),
                 hw_version: '1.7-BD-00',
                 image_version: '218',
                 client_type: 'STB',
@@ -70,7 +70,7 @@ describe('StalkerAuthApi', () => {
             })
         );
         // Same box as the metrics payload and the MAG User-Agent header.
-        expect(JSON.parse(profile[1].params.metrics).model).toBe('MAG250');
+        expect(JSON.parse(profile[1].params.metrics).model).toBe('MAG254');
     });
 
     it('keeps the box description out of the flow-control params', async () => {

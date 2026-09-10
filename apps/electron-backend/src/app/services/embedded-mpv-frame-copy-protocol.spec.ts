@@ -11,7 +11,7 @@ describe('buildLoadPlaybackCommand', () => {
             ...basePlayback,
             headers: {
                 'X-User-Agent':
-                    'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG250',
+                    'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG254',
                 Referer: 'https://portal.example/c/',
             },
         });
@@ -23,7 +23,7 @@ describe('buildLoadPlaybackCommand', () => {
         expect(headerField).toBeDefined();
         // The comma inside the MAG user agent is mpv-escaped; the comma
         // separating the two header fields is not.
-        expect(headerField).toContain('(KHTML\\, like Gecko) MAG250');
+        expect(headerField).toContain('(KHTML\\, like Gecko) MAG254');
         expect(headerField).toContain(',Referer: https://portal.example/c/');
     });
 
