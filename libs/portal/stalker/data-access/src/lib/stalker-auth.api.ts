@@ -266,7 +266,7 @@ export class StalkerAuthApi {
         // Build metrics JSON matching working app
         const metrics: Record<string, string> = {
             mac: macAddress,
-            model: 'MAG250',
+            model: 'MAG254',
             type: 'STB',
             random: handshakeRandom,
             ...(normalizedIdentity.serialNumber
