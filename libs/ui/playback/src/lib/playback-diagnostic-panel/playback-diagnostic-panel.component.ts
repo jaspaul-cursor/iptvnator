@@ -73,6 +73,7 @@ export class PlaybackDiagnosticPanelComponent {
         input.required<readonly PlaybackRecommendation[]>();
     readonly playback = input.required<ResolvedPortalPlayback>();
     readonly supportsManagedExternalPlayers = input.required<boolean>();
+    readonly supportsMpvProtocol = input(false);
     readonly playbackExternallyTransferable = input.required<boolean>();
     readonly alternativeSources = input<readonly VodSourceDescriptor[]>([]);
     readonly externalStates = input.required<ExternalRecoveryStates>();
@@ -145,6 +146,7 @@ export class PlaybackDiagnosticPanelComponent {
         return getDiagnosticDescriptionKey(
             issue,
             this.supportsManagedExternalPlayers(),
+            this.supportsMpvProtocol(),
             this.playbackExternallyTransferable()
         );
     }

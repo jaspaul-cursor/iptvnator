@@ -664,7 +664,7 @@
         "EXTERNAL_STARTED": "Player started",
         "EXTERNAL_PLAYING": "Playing",
         "EXTERNAL_FAILED": "External player error",
-        "ACTION_OPEN_MPV_HINT": "configured player",
+        "ACTION_OPEN_MPV_HINT": "Opens in your installed MPV player",
         "ACTION_OPEN_VLC_HINT": "configured player",
         "ACTION_COPY_URL": "Copy stream URL",
         "ACTION_RETRY": "Retry",

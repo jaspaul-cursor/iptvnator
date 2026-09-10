@@ -40,6 +40,7 @@ function recommendations(options: {
         attemptedTargets: options.attemptedTargets ?? new Set(),
         externalStates: options.externalStates ?? externalStates(),
         managedExternalPlayersAvailable: true,
+        mpvProtocolAvailable: true,
         playbackExternallyTransferable: true,
         isLive: false,
         alternativeSourceCount: 1,

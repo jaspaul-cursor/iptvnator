@@ -271,6 +271,37 @@ describe('playback target capabilities', () => {
         ]);
     });
 
+    it('enables MPV through the protocol handler when managed players are unavailable', () => {
+        expect(
+            createPlaybackTargetCapabilities({
+                sourceKind: PlaybackSourceKind.Hls,
+                managedExternalPlayersAvailable: false,
+                mpvProtocolAvailable: true,
+            })
+        ).toEqual([
+            {
+                kind: 'inline',
+                target: InlinePlaybackPlayer.VideoJs,
+                available: true,
+                engineFamily: PlaybackEngineFamily.Vhs,
+            },
+            {
+                kind: 'inline',
+                target: InlinePlaybackPlayer.Html5,
+                available: true,
+                engineFamily: PlaybackEngineFamily.HlsJs,
+            },
+            {
+                kind: 'inline',
+                target: InlinePlaybackPlayer.ArtPlayer,
+                available: true,
+                engineFamily: PlaybackEngineFamily.HlsJs,
+            },
+            { kind: 'external', target: 'mpv', available: true },
+            { kind: 'external', target: 'vlc', available: false },
+        ]);
+    });
+
     it('fails closed for unknown inline source capabilities', () => {
         expect(
             createPlaybackTargetCapabilities({

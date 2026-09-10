@@ -1,0 +1,9 @@
+.open-in-mpv-button {
+    backdrop-filter: blur(8px);
+    background: color-mix(in srgb, var(--app-surface) 82%, transparent);
+}
+
+.open-in-mpv-button--compact {
+    min-width: 0;
+    padding-inline: 0.5rem;
+}

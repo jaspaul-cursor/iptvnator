@@ -123,10 +123,13 @@ these limitations explicit in UI, troubleshooting, and release notes:
   `DatabaseService`. `PlaylistsService.deletePlaylist()` runs registered
   cleanup hooks such as the PWA Xtream cleanup so localStorage sidecar data does
   not survive after the source is removed.
-- The Docker/PWA runtime cannot launch MPV, VLC, IINA, Embedded MPV, download
-  manager flows, or Electron remote-control features. If inline browser
-  playback fails, the supported browser fallback is copying the stream URL and
-  opening it manually in an external player.
+- The Docker/PWA runtime cannot launch managed MPV/VLC through Electron IPC,
+  IINA, Embedded MPV, download manager flows, or Electron remote-control
+  features. Browser builds can still hand transferable `http(s)` streams to a
+  locally installed MPV through the `mpv://` URL handler (`MpvProtocolService`
+  in `libs/services`, helpers in `libs/shared/interfaces`). Custom playback
+  headers are not forwarded through `mpv://`; copy the stream URL when headers
+  are required. VLC has no equivalent browser protocol in IPTVnator.
 
 Provider URLs are registered before proxy calls so the proxy endpoints do not
 accept raw target URLs in query strings. Registration validates the target URL

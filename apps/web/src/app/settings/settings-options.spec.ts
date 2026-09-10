@@ -1,7 +1,11 @@
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
-import { buildSettingsSectionNavItems } from './settings-options';
+import {
+    buildSettingsPlayerOptions,
+    buildSettingsSectionNavItems,
+} from './settings-options';
+import { VideoPlayer } from '@iptvnator/shared/interfaces';
 
 /**
  * Every nav-item id must match a `@case ('...')` label in the settings page
@@ -79,6 +83,21 @@ describe('buildSettingsSectionNavItems', () => {
         // could never be opened).
         const unreachable = [...renderableIds].filter((id) => !navIds.has(id));
         expect(unreachable).toEqual([]);
+    });
+
+    it('offers MPV in browser builds through the mpv:// protocol handler', () => {
+        const options = buildSettingsPlayerOptions({
+            supportsEmbeddedMpv: false,
+            supportsManagedExternalPlayers: false,
+            supportsMpvProtocol: true,
+        });
+
+        expect(options.map((option) => option.id)).toEqual(
+            expect.arrayContaining([VideoPlayer.MPV])
+        );
+        expect(options.map((option) => option.id)).not.toContain(
+            VideoPlayer.VLC
+        );
     });
 
     it('keeps the settings rail in the expected order', () => {

@@ -19,7 +19,7 @@ function shaka(code: number, category = 6): PlaybackDiagnostic {
     return result;
 }
 const description = (issue: PlaybackDiagnostic) =>
-    getDiagnosticDescriptionKey(issue, false, false);
+    getDiagnosticDescriptionKey(issue, false, false, false);
 
 describe('evidence-backed diagnostic summaries', () => {
     it('explains an explicitly unsupported app DRM configuration', () => {

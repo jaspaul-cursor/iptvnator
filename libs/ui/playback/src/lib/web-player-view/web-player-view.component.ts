@@ -41,6 +41,7 @@ import {
     WEB_PLAYER_SHARED_CONTROLS_ENABLED,
 } from '../player-controls';
 import type { SeriesPlaybackNavigation } from '../portal-inline-player/series-playback-navigation';
+import { OpenInMpvButtonComponent } from '../open-in-mpv-button/open-in-mpv-button.component';
 import { VjsPlayerComponent } from '../vjs-player/vjs-player.component';
 import type { VideoPlayerOptions } from '../vjs-player/vjs-player.types';
 import { ElectronStreamHeadersService } from './electron-stream-headers.service';
@@ -82,6 +83,7 @@ function resolveWebPlayerSharedControls(): boolean {
         EmbeddedMpvPlayerComponent,
         FullscreenChannelPanelComponent,
         HtmlVideoPlayerComponent,
+        OpenInMpvButtonComponent,
         PlaybackDiagnosticPanelComponent,
         VjsPlayerComponent,
     ],
@@ -237,6 +239,7 @@ export class WebPlayerViewComponent implements OnDestroy {
         alternativeSourceCount: () => this.alternativeSources().length,
         managedExternalPlayersAvailable: () =>
             this.runtime.supportsManagedExternalPlayers,
+        mpvProtocolAvailable: () => this.runtime.supportsMpvProtocol,
         tryAutoLiveFormat: (issue) => this.liveAutoFormat.tryFallback(issue),
         emitPlaybackFailed: (code) => this.playbackFailed.emit(code),
         emitExternalFallbackRequested: (request) =>
@@ -264,6 +267,15 @@ export class WebPlayerViewComponent implements OnDestroy {
     get supportsManagedExternalPlayers(): boolean {
         return this.runtime.supportsManagedExternalPlayers;
     }
+    readonly supportsMpvProtocol = computed(
+        () => this.runtime.supportsMpvProtocol
+    );
+    readonly showOpenInMpvAction = computed(
+        () =>
+            this.supportsMpvProtocol() &&
+            this.playbackExternallyTransferable() &&
+            !!this.resolvedPlayback().streamUrl
+    );
     readonly renderedApplications = computed<
         readonly PlaybackApplicationOwnership[]
     >(() => {

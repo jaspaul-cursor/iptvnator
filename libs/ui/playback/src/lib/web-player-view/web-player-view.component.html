@@ -113,12 +113,22 @@
     [enabled]="channelPanelAvailable()"
 />
 
+@if (showOpenInMpvAction()) {
+    <div class="web-player-view__native-action">
+        <app-open-in-mpv-button
+            [streamUrl]="resolvedPlayback().streamUrl"
+            [compact]="true"
+        />
+    </div>
+}
+
 @if (visiblePlaybackDiagnostic(); as issue) {
     <app-playback-diagnostic-panel
         [diagnostic]="issue"
         [recommendations]="recommendations()"
         [playback]="resolvedPlayback()"
         [supportsManagedExternalPlayers]="supportsManagedExternalPlayers"
+        [supportsMpvProtocol]="supportsMpvProtocol()"
         [playbackExternallyTransferable]="playbackExternallyTransferable()"
         [alternativeSources]="alternativeSources()"
         [externalStates]="externalRecoveryState()"

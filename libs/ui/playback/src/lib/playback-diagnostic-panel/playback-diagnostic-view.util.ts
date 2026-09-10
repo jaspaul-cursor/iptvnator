@@ -28,6 +28,7 @@ export function getDiagnosticTitleKey(issue: PlaybackDiagnostic): string {
 export function getDiagnosticDescriptionKey(
     issue: PlaybackDiagnostic,
     supportsManagedExternalPlayers: boolean,
+    supportsMpvProtocol: boolean,
     playbackExternallyTransferable: boolean
 ): string {
     const summary = getDiagnosticSummaryKey(issue);
@@ -41,7 +42,8 @@ export function getDiagnosticDescriptionKey(
 
     if (
         issue.code === PlaybackDiagnosticCode.BrowserAccessError &&
-        !supportsManagedExternalPlayers
+        !supportsManagedExternalPlayers &&
+        !supportsMpvProtocol
     ) {
         return 'PLAYBACK_DIAGNOSTICS.BROWSER_ACCESS_ERROR.PWA_DESCRIPTION';
     }

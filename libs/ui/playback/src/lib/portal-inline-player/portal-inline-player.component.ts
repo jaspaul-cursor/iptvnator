@@ -27,6 +27,7 @@ import type { PlaybackDiagnosticCode } from '@iptvnator/playback/util';
 import { SettingsStore } from '@iptvnator/services';
 import { applyChannelNameStrip } from '@iptvnator/shared/m3u-utils';
 import type { PlayerMediaTitle } from '../player-controls';
+import { OpenInMpvButtonComponent } from '../open-in-mpv-button/open-in-mpv-button.component';
 import { WebPlayerViewComponent } from '../web-player-view/web-player-view.component';
 import type {
     SeriesEpisodeMetadata,
@@ -52,6 +53,7 @@ const RAIL_STAGE_GAP = 18;
         MatIconModule,
         MatTooltipModule,
         TranslateModule,
+        OpenInMpvButtonComponent,
         UpNextRailComponent,
         VodSourcesChipComponent,
         WebPlayerViewComponent,

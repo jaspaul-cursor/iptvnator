@@ -28,3 +28,11 @@ app-html-video-player {
     height: 100%;
     background: #000;
 }
+
+.web-player-view__native-action {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 3;
+    pointer-events: auto;
+}
