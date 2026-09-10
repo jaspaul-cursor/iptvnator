@@ -32,3 +32,6 @@ export const STALKER_STB_PROFILE_PARAMS: Readonly<Record<string, string>> =
         video_out: 'hdmi',
         hd: '1',
     });
+
+/** `api_signature` sent on `get_profile` by MAG/STB clients (reference clients use `262`). */
+export const STALKER_API_SIGNATURE = '262';

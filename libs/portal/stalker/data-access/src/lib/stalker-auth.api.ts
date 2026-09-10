@@ -1,6 +1,10 @@
 import type { DataService } from '@iptvnator/services';
 import {
+    buildStalkerHwVersion2,
+    buildStalkerPrehash,
+    buildStalkerProfileMetrics,
     extractStalkerAuthFailureBody,
+    STALKER_API_SIGNATURE,
     STALKER_REQUEST,
     STALKER_STB_PROFILE_PARAMS,
 } from '@iptvnator/shared/interfaces';
@@ -105,28 +109,6 @@ interface StalkerHandshakeOutcome {
 }
 
 /**
- * SHA1 hash using native Web Crypto API
- * Produces correct 40-character hex hash matching real Stalker clients
- */
-async function sha1(str: string): Promise<string> {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(str);
-    const hashBuffer = await crypto.subtle.digest('SHA-1', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-}
-
-/**
- * Generates SHA1 prehash from MAC address
- * This must match what real Stalker clients send
- */
-async function generatePrehash(macAddress: string): Promise<string> {
-    // Use MAC address with colons, uppercase - this is what most clients use
-    const str = macAddress.toUpperCase();
-    return (await sha1(str)).toUpperCase();
-}
-
-/**
  * Generates a random string for metrics
  */
 function generateRandom(): string {
@@ -196,7 +178,7 @@ export class StalkerAuthApi {
         signal?: AbortSignal
     ): Promise<StalkerHandshakeOutcome> {
         const normalizedIdentity = normalizeStalkerPortalIdentity(identity);
-        const prehash = await generatePrehash(macAddress);
+        const prehash = (await buildStalkerPrehash(macAddress)) ?? '';
 
         const params: Record<string, string> = {
             type: 'stb',
@@ -263,19 +245,18 @@ export class StalkerAuthApi {
     ): Promise<StalkerProfileResponse> {
         const normalizedIdentity = normalizeStalkerPortalIdentity(identity);
 
-        // Build metrics JSON matching working app
-        const metrics: Record<string, string> = {
-            mac: macAddress,
-            model: STALKER_STB_PROFILE_PARAMS.stb_type,
-            type: 'STB',
-            random: handshakeRandom,
+        const metrics = buildStalkerProfileMetrics({
+            macAddress,
+            handshakeRandom,
             ...(normalizedIdentity.serialNumber
-                ? { sn: normalizedIdentity.serialNumber }
+                ? { serialNumber: normalizedIdentity.serialNumber }
                 : {}),
-        };
+        });
 
-        // Generate prehash for get_profile (same as handshake)
-        const prehash = await generatePrehash(macAddress);
+        const [prehash, hwVersion2] = await Promise.all([
+            buildStalkerPrehash(macAddress),
+            buildStalkerHwVersion2(macAddress),
+        ]);
 
         const params: Record<string, string> = {
             type: 'stb',
@@ -286,6 +267,9 @@ export class StalkerAuthApi {
             ...STALKER_STB_PROFILE_PARAMS,
             not_valid_token: options.notValidToken ? '1' : '0',
             auth_second_step: options.authSecondStep ? '1' : '0',
+            api_signature: STALKER_API_SIGNATURE,
+            timestamp: String(Math.floor(Date.now() / 1000)),
+            ...(hwVersion2 ? { hw_version_2: hwVersion2 } : {}),
             metrics: JSON.stringify(metrics),
             ...(normalizedIdentity.serialNumber
                 ? { sn: normalizedIdentity.serialNumber }
@@ -302,7 +286,7 @@ export class StalkerAuthApi {
             ...(normalizedIdentity.signature2
                 ? { signature2: normalizedIdentity.signature2 }
                 : {}),
-            prehash: prehash,
+            prehash: prehash ?? '',
             JsHttpRequest: '1-xml',
         };
 

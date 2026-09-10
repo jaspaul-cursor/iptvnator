@@ -611,7 +611,11 @@ pinned, and IPTVnator has to send it or be refused.
 (`libs/shared/interfaces/src/lib/stalker-stb-profile.const.ts`): `ver`,
 `stb_type` (`MAG254`, previously sent as an empty string), `hw_version`,
 `image_version`, `client_type`, plus the `num_banks`/`video_out`/`hd` the
-request already carried. The stock middleware stores these for the admin panel
+request already carried. The request also sends `api_signature` (`262`),
+`hw_version_2` (SHA-1 of the canonical MAC, lowercase hex), a current
+`timestamp`, and a `metrics` JSON blob built by
+`buildStalkerProfileMetrics()` (`mac`, `model`, `type`, empty `uid`, `random`,
+and optional `sn`). The stock middleware stores these for the admin panel
 and only an operator's optional `access_filter.php` inspects them, so they are
 free to send — but they must describe the same box as `metrics.model` and the
 `STALKER_MAG_USER_AGENT` header, or the profile reads as a forgery.

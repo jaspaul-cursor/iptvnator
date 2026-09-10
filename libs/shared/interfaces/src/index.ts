@@ -85,6 +85,7 @@ export * from './lib/stalker-identity.utils';
 export * from './lib/stalker-mac-address.util';
 export * from './lib/stalker-request-identity.util';
 export * from './lib/stalker-stb-profile.const';
+export * from './lib/stalker-profile-request.util';
 export * from './lib/stalker-request-url.util';
 export * from './lib/stalker-portal-item.interface';
 export * from './lib/stalker-stream-profile.util';
