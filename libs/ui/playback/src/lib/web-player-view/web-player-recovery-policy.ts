@@ -22,6 +22,7 @@ export function createWebPlayerRecommendations(options: {
     readonly attemptedTargets: ReadonlySet<PlaybackRecommendationTarget>;
     readonly externalStates: ExternalRecoveryStates;
     readonly managedExternalPlayersAvailable: boolean;
+    readonly mpvProtocolAvailable: boolean;
     readonly playbackExternallyTransferable: boolean;
     readonly isLive: boolean;
     readonly alternativeSourceCount: number;
@@ -43,6 +44,7 @@ export function createWebPlayerRecommendations(options: {
             sourceKind,
             managedExternalPlayersAvailable:
                 options.managedExternalPlayersAvailable,
+            mpvProtocolAvailable: options.mpvProtocolAvailable,
         }),
         source: {
             kind: sourceKind,

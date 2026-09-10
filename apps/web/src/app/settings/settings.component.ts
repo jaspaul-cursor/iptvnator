@@ -140,6 +140,7 @@ export class SettingsComponent
     readonly supportsEpg = this.form.supportsEpg;
     readonly supportsManagedExternalPlayers =
         this.runtime.supportsManagedExternalPlayers;
+    readonly supportsMpvProtocol = this.runtime.supportsMpvProtocol;
     readonly supportsExternalPlayerPathSettings =
         this.runtime.supportsExternalPlayerPathSettings;
     readonly supportsVodMultiSource = this.vodSourceDiscovery.isAvailable;
@@ -156,6 +157,7 @@ export class SettingsComponent
         buildSettingsPlayerOptions({
             supportsEmbeddedMpv: this.embeddedMpv.supported(),
             supportsManagedExternalPlayers: this.supportsManagedExternalPlayers,
+            supportsMpvProtocol: this.supportsMpvProtocol,
         })
     );
 

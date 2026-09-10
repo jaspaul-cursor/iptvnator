@@ -123,6 +123,7 @@ describe('playback diagnostic view formatters', () => {
                     getDiagnosticDescriptionKey(
                         diagnosticIssue,
                         supportsManagedExternalPlayers,
+                        false,
                         true
                     )
                 ).toBe(expected);
@@ -139,6 +140,7 @@ describe('playback diagnostic view formatters', () => {
                     getDiagnosticDescriptionKey(
                         diagnosticIssue,
                         supportsManagedExternalPlayers,
+                        false,
                         false
                     )
                 ).toBe('PLAYBACK_DIAGNOSTICS.UNTRANSFERABLE_DESCRIPTION');
@@ -166,7 +168,7 @@ describe('playback diagnostic view formatters', () => {
         'preserves neutral %s copy for protected playback',
         (_label, code, expected) => {
             expect(
-                getDiagnosticDescriptionKey({ ...issue, code }, true, false)
+                getDiagnosticDescriptionKey({ ...issue, code }, true, false, false)
             ).toBe(expected);
         }
     );

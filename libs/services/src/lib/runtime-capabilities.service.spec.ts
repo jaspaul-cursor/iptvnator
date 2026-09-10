@@ -41,6 +41,7 @@ describe('RuntimeCapabilitiesService', () => {
         expect(service.supportsStalkerPlaylistSqliteSync).toBe(false);
         expect(service.supportsPlaylistRefresh).toBe(false);
         expect(service.supportsManagedExternalPlayers).toBe(false);
+        expect(service.supportsMpvProtocol).toBe(true);
         expect(service.supportsExternalPlayerPathSettings).toBe(false);
         expect(service.supportsEmbeddedMpv).toBe(false);
         expect(service.supportsDesktopFileSave).toBe(false);
@@ -168,6 +169,7 @@ describe('RuntimeCapabilitiesService', () => {
         expect(service.supportsStalkerPlaylistSqliteSync).toBe(true);
         expect(service.supportsPlaylistRefresh).toBe(true);
         expect(service.supportsManagedExternalPlayers).toBe(true);
+        expect(service.supportsMpvProtocol).toBe(false);
         expect(service.supportsExternalPlayerPathSettings).toBe(true);
         expect(service.supportsEmbeddedMpv).toBe(true);
         expect(service.supportsDesktopFileSave).toBe(true);

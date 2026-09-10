@@ -13,11 +13,12 @@ import {
     switchMap,
     throwError,
 } from 'rxjs';
-import { DataService } from '@iptvnator/services';
+import { DataService, MpvProtocolService } from '@iptvnator/services';
 import {
     CONNECTIVITY_GUARD_RESET,
     ERROR,
     isHostConnectivityFastFailMessage,
+    OPEN_MPV_PLAYER,
     Playlist,
     PLAYLIST_PARSE_BY_URL,
     PLAYLIST_UPDATE,
@@ -25,6 +26,8 @@ import {
     XtreamCodeActions,
     XTREAM_REQUEST,
     XTREAM_RESPONSE,
+    type ExternalPlayerSession,
+    type PlayerContentInfo,
 } from '@iptvnator/shared/interfaces';
 import { AppConfig } from '../../environments/environment';
 import {
@@ -84,6 +87,7 @@ export class PwaService extends DataService {
     private readonly swUpdate = inject(SwUpdate);
     private readonly translateService = inject(TranslateService);
     private readonly logger = createLogger('PwaService');
+    private readonly mpvProtocol = inject(MpvProtocolService);
     private readonly providerTargetIds = new Map<string, Promise<string>>();
     private readonly silentXtreamActions = new Set<string>([
         XtreamCodeActions.GetAccountInfo,
@@ -163,7 +167,44 @@ export class PwaService extends DataService {
             ) as T;
         }
 
+        if (type === OPEN_MPV_PLAYER) {
+            return this.openMpvProtocol(
+                payload as {
+                    url: string;
+                    title?: string;
+                    thumbnail?: string;
+                    contentInfo?: PlayerContentInfo;
+                    startTime?: number;
+                }
+            ) as T;
+        }
+
         return undefined as T;
+    }
+
+    private openMpvProtocol(payload: {
+        url: string;
+        title?: string;
+        thumbnail?: string;
+        contentInfo?: PlayerContentInfo;
+        startTime?: number;
+    }): ExternalPlayerSession | undefined {
+        const contentType = payload.contentInfo?.contentType;
+        const isLive =
+            contentType === 'live' ||
+            contentType === undefined ||
+            contentType === 'radio';
+
+        return (
+            this.mpvProtocol.openPlayback({
+                streamUrl: payload.url,
+                title: payload.title ?? '',
+                thumbnail: payload.thumbnail,
+                isLive,
+                startTime: payload.startTime,
+                contentInfo: payload.contentInfo,
+            }) ?? undefined
+        );
     }
 
     /**

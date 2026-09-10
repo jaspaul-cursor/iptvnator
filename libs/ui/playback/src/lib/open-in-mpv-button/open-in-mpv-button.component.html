@@ -1,0 +1,16 @@
+@if (visible()) {
+    <button
+        mat-stroked-button
+        type="button"
+        class="open-in-mpv-button"
+        [class.open-in-mpv-button--compact]="compact()"
+        data-test-id="open-in-mpv"
+        [matTooltip]="'PLAYBACK_DIAGNOSTICS.ACTION_OPEN_MPV_HINT' | translate"
+        (click)="openInMpv()"
+    >
+        <mat-icon aria-hidden="true">open_in_new</mat-icon>
+        @if (!compact()) {
+            {{ 'PLAYBACK_DIAGNOSTICS.ACTION_OPEN_MPV' | translate }}
+        }
+    </button>
+}

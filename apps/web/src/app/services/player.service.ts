@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ExternalPlayerInfoDialogComponent } from '@iptvnator/ui/playback/external-player-info-dialog';
-import { DataService } from '@iptvnator/services';
+import { DataService, MpvProtocolService, RuntimeCapabilitiesService } from '@iptvnator/services';
 import {
     ExternalPlayerSession,
     OPEN_MPV_PLAYER,
@@ -20,6 +20,8 @@ export class PlayerService {
     private dialog = inject(MatDialog);
     private dataService = inject(DataService);
     private settingsStore = inject(SettingsStore);
+    private runtime = inject(RuntimeCapabilitiesService);
+    private mpvProtocol = inject(MpvProtocolService);
 
     isEmbeddedPlayer(
         player = this.settingsStore.player() ?? VideoPlayer.VideoJs
@@ -87,6 +89,10 @@ export class PlayerService {
         playback: ResolvedPortalPlayback,
         player: ExternalPlayerName
     ): Promise<ExternalPlayerSession | void> {
+        if (player === 'mpv' && this.runtime.supportsMpvProtocol) {
+            return this.mpvProtocol.openPlayback(playback) ?? undefined;
+        }
+
         const ipcEvent =
             player === 'mpv' ? OPEN_MPV_PLAYER : OPEN_VLC_PLAYER;
 

@@ -64,7 +64,11 @@ export function getInlinePlaybackEngineFamily(
 export function createPlaybackTargetCapabilities(options: {
     readonly sourceKind: PlaybackSourceKind;
     readonly managedExternalPlayersAvailable: boolean;
+    readonly mpvProtocolAvailable?: boolean;
 }): readonly PlaybackTargetCapability[] {
+    const mpvAvailable =
+        options.managedExternalPlayersAvailable ||
+        options.mpvProtocolAvailable === true;
     const inlineTargets = [
         InlinePlaybackPlayer.VideoJs,
         InlinePlaybackPlayer.Html5,
@@ -88,7 +92,7 @@ export function createPlaybackTargetCapabilities(options: {
         {
             kind: 'external',
             target: 'mpv',
-            available: options.managedExternalPlayersAvailable,
+            available: mpvAvailable,
         },
         {
             kind: 'external',

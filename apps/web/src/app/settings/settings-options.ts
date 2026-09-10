@@ -119,6 +119,7 @@ export const SETTINGS_EMBEDDED_PLAYER_OPTIONS: SettingsPlayerOption[] = [
 export interface SettingsPlayerAvailability {
     supportsEmbeddedMpv: boolean;
     supportsManagedExternalPlayers: boolean;
+    supportsMpvProtocol: boolean;
 }
 
 /**
@@ -128,7 +129,16 @@ export interface SettingsPlayerAvailability {
 export function buildSettingsPlayerOptions({
     supportsEmbeddedMpv,
     supportsManagedExternalPlayers,
+    supportsMpvProtocol,
 }: SettingsPlayerAvailability): SettingsPlayerOption[] {
+    const externalPlayers = supportsManagedExternalPlayers
+        ? SETTINGS_OS_PLAYER_OPTIONS
+        : supportsMpvProtocol
+          ? SETTINGS_OS_PLAYER_OPTIONS.filter(
+                (option) => option.id === VideoPlayer.MPV
+            )
+          : [];
+
     return [
         ...SETTINGS_EMBEDDED_PLAYER_OPTIONS,
         ...(supportsEmbeddedMpv
@@ -139,7 +149,7 @@ export function buildSettingsPlayerOptions({
                   },
               ]
             : []),
-        ...(supportsManagedExternalPlayers ? SETTINGS_OS_PLAYER_OPTIONS : []),
+        ...externalPlayers,
     ];
 }
 

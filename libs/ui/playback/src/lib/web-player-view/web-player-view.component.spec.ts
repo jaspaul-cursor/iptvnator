@@ -1183,6 +1183,7 @@ describe('WebPlayerViewComponent', () => {
         return resolveDiagnosticDescriptionKey(
             issue,
             runtimeCapabilities.supportsManagedExternalPlayers,
+            false,
             true
         );
     }

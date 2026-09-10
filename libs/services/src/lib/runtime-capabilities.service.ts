@@ -291,6 +291,14 @@ export class RuntimeCapabilitiesService {
         );
     }
 
+    /**
+     * Browser/PWA builds can hand streams to a locally installed MPV through
+     * the `mpv://` URL handler. Electron keeps using managed MPV/VLC instead.
+     */
+    get supportsMpvProtocol(): boolean {
+        return this.isPwa;
+    }
+
     get supportsExternalPlayerPathSettings(): boolean {
         return ['setMpvPlayerPath', 'setVlcPlayerPath'].every((methodName) =>
             this.hasElectronMethod(methodName)

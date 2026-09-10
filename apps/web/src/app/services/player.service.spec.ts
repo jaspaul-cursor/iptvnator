@@ -1,6 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
-import { DataService } from '@iptvnator/services';
+import {
+    DataService,
+    MpvProtocolService,
+    RuntimeCapabilitiesService,
+} from '@iptvnator/services';
 import { ExternalPlayerSession, VideoPlayer } from '@iptvnator/shared/interfaces';
 import { SettingsStore } from './settings-store.service';
 import { PlayerService } from './player.service';
@@ -15,6 +19,12 @@ describe('PlayerService', () => {
     };
     const settingsStore = {
         player: jest.fn(() => VideoPlayer.VideoJs),
+    };
+    const runtime = {
+        supportsMpvProtocol: false,
+    };
+    const mpvProtocol = {
+        openPlayback: jest.fn(),
     };
 
     beforeEach(() => {
@@ -33,6 +43,14 @@ describe('PlayerService', () => {
                     provide: SettingsStore,
                     useValue: settingsStore,
                 },
+                {
+                    provide: RuntimeCapabilitiesService,
+                    useValue: runtime,
+                },
+                {
+                    provide: MpvProtocolService,
+                    useValue: mpvProtocol,
+                },
             ],
         });
 
@@ -41,6 +59,8 @@ describe('PlayerService', () => {
         dataService.sendIpcEvent.mockReset();
         settingsStore.player.mockReset();
         settingsStore.player.mockReturnValue(VideoPlayer.VideoJs);
+        runtime.supportsMpvProtocol = false;
+        mpvProtocol.openPlayback.mockReset();
     });
 
     it('identifies embedded players', () => {
@@ -89,6 +109,34 @@ describe('PlayerService', () => {
                 title: 'Example Video',
             })
         );
+        expect(result).toEqual(session);
+    });
+
+    it('opens MPV through the protocol handler in browser builds', async () => {
+        const session: ExternalPlayerSession = {
+            id: 'mpv-protocol-1',
+            player: 'mpv',
+            status: 'opened',
+            title: 'Example Video',
+            streamUrl: 'https://example.com/video.mp4',
+            startedAt: '2026-03-07T10:00:00.000Z',
+            updatedAt: '2026-03-07T10:00:00.000Z',
+            canClose: false,
+        };
+        runtime.supportsMpvProtocol = true;
+        settingsStore.player.mockReturnValue(VideoPlayer.MPV);
+        mpvProtocol.openPlayback.mockReturnValue(session);
+
+        const result = await service.openResolvedPlayback({
+            streamUrl: 'https://example.com/video.mp4',
+            title: 'Example Video',
+        });
+
+        expect(mpvProtocol.openPlayback).toHaveBeenCalledWith({
+            streamUrl: 'https://example.com/video.mp4',
+            title: 'Example Video',
+        });
+        expect(dataService.sendIpcEvent).not.toHaveBeenCalled();
         expect(result).toEqual(session);
     });
 
