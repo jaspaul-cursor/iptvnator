@@ -48,7 +48,9 @@ describe('StalkerAuthApi', () => {
         );
     }
 
-    it('reports one coherent MAG250 in the profile request', async () => {
+    it('reports one coherent MAG254 in the profile request', async () => {
+        const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(1_789_000_431_000);
+
         sendIpcEvent
             .mockResolvedValueOnce({ js: { token: 'TOKEN-1', random: 'r1' } })
             .mockResolvedValueOnce({ js: { status: 0 } });
@@ -59,18 +61,29 @@ describe('StalkerAuthApi', () => {
         expect(profile[1].params).toEqual(
             expect.objectContaining({
                 // `stb_type` used to go out as an empty string.
-                stb_type: 'MAG250',
-                ver: expect.stringContaining('0.2.18-r14-pub-250'),
+                stb_type: 'MAG254',
+                ver: expect.stringContaining('0.2.18-r23-pub-254'),
                 hw_version: '1.7-BD-00',
+                hw_version_2: '0101010101010101010101010101010101010101',
                 image_version: '218',
                 client_type: 'STB',
                 num_banks: '2',
                 video_out: 'hdmi',
                 hd: '1',
+                api_signature: '262',
+                timestamp: '1789000431',
+                prehash: '0101010101010101010101010101010101010101',
             })
         );
-        // Same box as the metrics payload and the MAG User-Agent header.
-        expect(JSON.parse(profile[1].params.metrics).model).toBe('MAG250');
+        expect(JSON.parse(profile[1].params.metrics)).toEqual({
+            mac: macAddress,
+            model: 'MAG254',
+            type: 'STB',
+            uid: '',
+            random: 'r1',
+        });
+
+        nowSpy.mockRestore();
     });
 
     it('keeps the box description out of the flow-control params', async () => {

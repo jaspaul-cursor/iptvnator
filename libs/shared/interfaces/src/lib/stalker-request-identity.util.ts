@@ -4,12 +4,12 @@ import {
 } from './stalker-identity.utils';
 
 /**
- * User-Agent of a MAG250 set-top box (matches the stalker-to-m3u reference
+ * User-Agent of a MAG254 set-top box (matches the stalker-to-m3u reference
  * implementation). Sent as both `User-Agent` and `X-User-Agent` on every
  * portal API request — some panels reject requests without it.
  */
 export const STALKER_MAG_USER_AGENT =
-    'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG250';
+    'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG254';
 
 export interface StalkerIdentityRequestInput {
     macAddress: string;

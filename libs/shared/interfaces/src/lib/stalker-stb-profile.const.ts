@@ -8,7 +8,7 @@
  * for the admin panel; only an operator's optional `access_filter.php` ever
  * inspects them, and a box that reports nothing at all is the shape some of
  * those filters reject. They are therefore free to send and worth sending —
- * but only as one coherent MAG250: the model, firmware, hardware revision and
+ * but only as one coherent MAG254: the model, firmware, hardware revision and
  * image version have to describe the same box as `metrics.model` and the
  * `STALKER_MAG_USER_AGENT` request header, or the profile reads as a forgery.
  *
@@ -19,10 +19,11 @@
  */
 export const STALKER_STB_PROFILE_PARAMS: Readonly<Record<string, string>> =
     Object.freeze({
-        /** Firmware banner a MAG250 reports verbatim. */
-        ver: 'ImageDescription: 0.2.18-r14-pub-250; ImageDate: Fri Jan 15 15:20:44 EET 2016; PORTAL version: 5.6.0; API Version: JS API version: 328; STB API version: 134; Player Engine version: 0x566',
+        /** Firmware banner a MAG254 reports verbatim. */
+        ver:
+            'ImageDescription: 0.2.18-r23-pub-254; ImageDate: Wed Aug 29 10:49:26 EEST 2018; PORTAL version: 5.6.1; API Version: JS API version: 328; STB API version: 134; Player Engine version: 0x566',
         /** Was sent empty before — some panels treat that as "not a box". */
-        stb_type: 'MAG250',
+        stb_type: 'MAG254',
         hw_version: '1.7-BD-00',
         /** Numeric form of the `0.2.18` firmware in `ver`. */
         image_version: '218',
@@ -31,3 +32,6 @@ export const STALKER_STB_PROFILE_PARAMS: Readonly<Record<string, string>> =
         video_out: 'hdmi',
         hd: '1',
     });
+
+/** `api_signature` sent on `get_profile` by MAG/STB clients (reference clients use `262`). */
+export const STALKER_API_SIGNATURE = '262';

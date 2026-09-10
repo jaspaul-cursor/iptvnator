@@ -407,7 +407,7 @@ field the user leaves blank stays blank — nothing is invented for it, and
 nothing empty is forwarded to `get_profile`. The one way a value appears
 without being typed is the explicit import-time opt-in described under
 "Deriving device IDs from the MAC" below, which writes into the visible fields
-first. (The fixed MAG250 description `get_profile` reports is separate: it
+first. (The fixed MAG254 description `get_profile` reports is separate: it
 describes the emulated box, not the account — see "Reported device profile".)
 
 - User-provided `sn`, `device_id`, `device_id2`, `signature`, and `signature2`
@@ -606,12 +606,16 @@ pinned, and IPTVnator has to send it or be refused.
 
 ### Reported device profile
 
-`get_profile` carries a fixed MAG250 description from
+`get_profile` carries a fixed MAG254 description from
 `STALKER_STB_PROFILE_PARAMS`
 (`libs/shared/interfaces/src/lib/stalker-stb-profile.const.ts`): `ver`,
-`stb_type` (`MAG250`, previously sent as an empty string), `hw_version`,
+`stb_type` (`MAG254`, previously sent as an empty string), `hw_version`,
 `image_version`, `client_type`, plus the `num_banks`/`video_out`/`hd` the
-request already carried. The stock middleware stores these for the admin panel
+request already carried. The request also sends `api_signature` (`262`),
+`hw_version_2` (SHA-1 of the canonical MAC, lowercase hex), a current
+`timestamp`, and a `metrics` JSON blob built by
+`buildStalkerProfileMetrics()` (`mac`, `model`, `type`, empty `uid`, `random`,
+and optional `sn`). The stock middleware stores these for the admin panel
 and only an operator's optional `access_filter.php` inspects them, so they are
 free to send — but they must describe the same box as `metrics.model` and the
 `STALKER_MAG_USER_AGENT` header, or the profile reads as a forgery.

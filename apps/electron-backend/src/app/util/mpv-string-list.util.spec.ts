@@ -4,12 +4,12 @@ import {
 } from './mpv-string-list.util';
 
 const MAG_USER_AGENT =
-    'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG250';
+    'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG254';
 
 describe('escapeMpvStringListValue', () => {
     it('escapes commas so mpv keeps them inside the value', () => {
         expect(escapeMpvStringListValue(`X-User-Agent: ${MAG_USER_AGENT}`)).toBe(
-            'X-User-Agent: Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML\\, like Gecko) MAG250'
+            'X-User-Agent: Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML\\, like Gecko) MAG254'
         );
     });
 
@@ -32,7 +32,7 @@ describe('joinMpvHeaderFields', () => {
         ]);
 
         expect(joined).toBe(
-            'X-User-Agent: Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML\\, like Gecko) MAG250,' +
+            'X-User-Agent: Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML\\, like Gecko) MAG254,' +
                 'Cookie: mac=00:1A:79:AA:BB:CC; stb_lang=en_US@rg=dezzzz'
         );
         // Exactly one unescaped separator between the two fields.
