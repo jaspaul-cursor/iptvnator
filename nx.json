@@ -68,10 +68,6 @@
         "e2e-ci--src/*.e2e.ts": {
             "dependsOn": [
                 {
-                    "projects": ["electron-backend"],
-                    "target": "build-e2e"
-                },
-                {
                     "projects": ["stalker-mock-server", "xtream-mock-server"],
                     "target": "serve"
                 }

@@ -47,9 +47,6 @@
             "@iptvnator/ui/playback/external-player-info-dialog": [
                 "libs/ui/playback/src/lib/external-player-info-dialog/external-player-info-dialog.component.ts"
             ],
-            "@iptvnator/ui/playback/embedded-mpv-player": [
-                "libs/ui/playback/src/lib/embedded-mpv-player/index.ts"
-            ],
             "@iptvnator/ui/playback": ["libs/ui/playback/src/index.ts"],
             "@iptvnator/playlist/import/feature": [
                 "libs/playlist/import/feature/src/index.ts"
@@ -95,16 +92,6 @@
             ],
             "@iptvnator/ui/shared-portals": [
                 "libs/ui/shared-portals/src/index.ts"
-            ],
-            "@iptvnator/ui/remote-control": [
-                "libs/ui/remote-control/src/index.ts"
-            ],
-            "@iptvnator/shared/database": ["libs/shared/database/src/index.ts"],
-            "@iptvnator/shared/database/schema": [
-                "libs/shared/database/src/lib/schema.ts"
-            ],
-            "@iptvnator/shared/database/path-utils": [
-                "libs/shared/database/src/lib/path-utils.ts"
             ],
             "@iptvnator/workspace/dashboard/feature": [
                 "libs/workspace/dashboard/feature/src/index.ts"
