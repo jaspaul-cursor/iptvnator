@@ -34,12 +34,9 @@ import {
 import {
     DatabaseService,
     DataService,
-    PlaylistBackupService,
     PlaylistsService,
 } from '@iptvnator/services';
 import {
-    ELECTRON_BRIDGE_APP_UPDATE_STATUSES,
-    ElectronBridgeAppUpdateStatus,
     Language,
     PlaylistMeta,
     StartupBehavior,
@@ -52,8 +49,7 @@ import { provideMockStore } from '@ngrx/store/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { MockModule, MockProvider } from 'ng-mocks';
 import { NgxIndexedDBService } from 'ngx-indexed-db';
-import { BehaviorSubject, from, of } from 'rxjs';
-import { ElectronServiceStub } from '../../services/electron.service.stub';
+import { BehaviorSubject, of } from 'rxjs';
 import { SettingsStorageFailure } from '@iptvnator/services';
 import { SettingsStore } from '../../services/settings-store.service';
 import { SettingsService } from '../../services/settings.service';
@@ -120,13 +116,6 @@ export const DEFAULT_SETTINGS = {
     epgViewMode: 'timeline',
     epgOffsetMinutes: 0,
     tmdb: { enabled: false, apiKey: '' },
-};
-
-export const DEFAULT_APP_UPDATE_STATUS: ElectronBridgeAppUpdateStatus = {
-    currentVersion: '0.22.0',
-    manualDownloadUrl: 'https://github.com/4gray/iptvnator/releases/latest',
-    status: ELECTRON_BRIDGE_APP_UPDATE_STATUSES.Idle,
-    supportedSelfUpdate: true,
 };
 
 export class MatSnackBarStub {
@@ -200,15 +189,11 @@ export class MockSettingsStore {
 }
 
 export class MockSettingsService {
-    getAppVersion = jest.fn().mockReturnValue(from(Promise.resolve('1.0.0')));
     changeTheme = jest.fn();
-    isVersionOutdated = jest.fn().mockImplementation(
-        (currentVersion: string, latestVersion: string) =>
-            currentVersion.localeCompare(latestVersion, undefined, {
-                numeric: true,
-                sensitivity: 'base',
-            }) < 0
-    );
+}
+
+export class MockDataService {
+    getAppVersion = jest.fn().mockReturnValue('1.0.0');
 }
 
 export function createEpgBridgeStub(): Partial<EpgRuntimeBridgeService> {
@@ -221,12 +206,9 @@ export function createEpgBridgeStub(): Partial<EpgRuntimeBridgeService> {
     };
 }
 
-/** The full desktop bridge the settings page expects to be present */
+/** Minimal desktop bridge for specs that still exercise EPG IPC paths. */
 export function createElectronStub(): typeof window.electron {
     return {
-        resetHostConnectivityGuard: jest
-            .fn()
-            .mockResolvedValue({ success: true }),
         checkEpgFreshness: jest.fn().mockResolvedValue({
             freshUrls: [],
             staleUrls: [],
@@ -235,37 +217,14 @@ export function createElectronStub(): typeof window.electron {
         clearEpgDataForSource: jest.fn().mockResolvedValue({ success: true }),
         fetchEpg: jest.fn().mockResolvedValue({ success: true }),
         forceFetchEpg: jest.fn().mockResolvedValue({ success: true }),
-        getAppVersion: jest.fn().mockResolvedValue('1.0.0'),
-        getAppUpdateStatus: jest
-            .fn()
-            .mockResolvedValue(DEFAULT_APP_UPDATE_STATUS),
         getChannelPrograms: jest.fn().mockResolvedValue([]),
         getEpgProgramsForChannels: jest.fn().mockResolvedValue({}),
         getEpgProgramCoverage: jest.fn().mockResolvedValue([]),
-        getLocalIpAddresses: jest.fn().mockResolvedValue([]),
-        checkForAppUpdate: jest
-            .fn()
-            .mockResolvedValue(DEFAULT_APP_UPDATE_STATUS),
-        downloadAppUpdate: jest
-            .fn()
-            .mockResolvedValue(DEFAULT_APP_UPDATE_STATUS),
-        installAppUpdate: jest
-            .fn()
-            .mockResolvedValue(DEFAULT_APP_UPDATE_STATUS),
-        onAppUpdateStatusChange: jest.fn(() => jest.fn()),
-        onWindowCloseRequested: jest.fn(() => jest.fn()),
-        setWindowCloseGuard: jest.fn().mockResolvedValue(undefined),
-        confirmWindowClose: jest.fn().mockResolvedValue(undefined),
-        cancelWindowClose: jest.fn().mockResolvedValue(undefined),
         openInMpv: jest.fn(),
         openInVlc: jest.fn(),
         platform: 'linux',
         searchEpgPrograms: jest.fn().mockResolvedValue([]),
-        saveFileDialog: jest.fn().mockResolvedValue('/tmp/backup.json'),
-        setMpvPlayerPath: jest.fn().mockResolvedValue(undefined),
-        setVlcPlayerPath: jest.fn().mockResolvedValue(undefined),
         updateSettings: jest.fn().mockResolvedValue(undefined),
-        writeFile: jest.fn().mockResolvedValue({ success: true }),
     } as unknown as typeof window.electron;
 }
 
@@ -292,18 +251,6 @@ export function createDialogRef(
     } as unknown as ReturnType<MatDialog['open']>;
 }
 
-export const BACKUP_EXPORT_RESULT = {
-    defaultFileName: 'iptvnator-playlist-backup-2026-04-21.json',
-    json: '{}',
-    manifest: {
-        kind: 'iptvnator-playlist-backup',
-        version: 1,
-        exportedAt: PLAYLIST_IMPORT_DATE,
-        includeSecrets: true,
-        playlists: [],
-    },
-};
-
 /** Providers every settings spec needs, whether or not it renders the page */
 export function settingsTestProviders(
     epgBridge: Partial<EpgRuntimeBridgeService>
@@ -317,7 +264,7 @@ export function settingsTestProviders(
         MockProvider(MatDialog, { open: jest.fn() }),
         { provide: SettingsService, useClass: MockSettingsService },
         { provide: MatSnackBar, useClass: MatSnackBarStub },
-        { provide: DataService, useClass: ElectronServiceStub },
+        { provide: DataService, useClass: MockDataService },
         { provide: Router, useClass: MockRouter },
         { provide: ActivatedRoute, useClass: MockActivatedRoute },
         provideMockStore({
@@ -334,16 +281,6 @@ export function settingsTestProviders(
         MockProvider(DatabaseService, {
             createOperationId: jest.fn().mockReturnValue('delete-all-op'),
             deleteAllPlaylists: jest.fn().mockResolvedValue(true),
-        }),
-        MockProvider(PlaylistBackupService, {
-            exportBackup: jest.fn().mockResolvedValue(BACKUP_EXPORT_RESULT),
-            importBackup: jest.fn().mockResolvedValue({
-                imported: 0,
-                merged: 0,
-                skipped: 0,
-                failed: 0,
-                errors: [],
-            }),
         }),
     ];
 }
@@ -373,19 +310,3 @@ export function configureSettingsComponentTestBed(
     }).compileComponents();
 }
 
-/**
- * `ngOnInit` kicks off a version check and a LAN address lookup; both are
- * stubbed on the owning facades so tests stay deterministic.
- */
-export function stubSettingsSideEffects(
-    settingsComponent: SettingsComponent
-): void {
-    jest.spyOn(
-        settingsComponent.appUpdate,
-        'checkAppVersion'
-    ).mockImplementation();
-    jest.spyOn(
-        settingsComponent.remoteControl,
-        'fetchLocalIpAddresses'
-    ).mockResolvedValue(undefined);
-}

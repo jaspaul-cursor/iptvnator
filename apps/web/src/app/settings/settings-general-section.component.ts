@@ -10,7 +10,6 @@ import { CoverSize, Language, Theme } from '@iptvnator/shared/interfaces';
 import {
     CoverSizeOption,
     StartupBehaviorOption,
-    StartupWindowModeOption,
     ThemeOption,
 } from './settings.models';
 
@@ -35,11 +34,6 @@ export class SettingsGeneralSectionComponent {
     readonly themeOptions = input.required<ThemeOption[]>();
     readonly coverSizeOptions = input.required<CoverSizeOption[]>();
     readonly startupBehaviorOptions = input.required<StartupBehaviorOption[]>();
-    readonly startupWindowModeOptions =
-        input.required<StartupWindowModeOption[]>();
-    /** Desktop only: the window-mode select needs the main-process mirror and F11 */
-    readonly supportsStartupWindowMode = input(false);
-    readonly supportsPortalConnectivityGuard = input(false);
 
     readonly selectTheme = output<Theme>();
     readonly selectCoverSize = output<CoverSize>();

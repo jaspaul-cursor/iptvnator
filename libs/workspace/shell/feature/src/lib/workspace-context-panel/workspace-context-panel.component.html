@@ -60,24 +60,6 @@
                         }
                     </mat-menu>
                 }
-                @if (isXtreamCategories()) {
-                    <button
-                        type="button"
-                        mat-icon-button
-                        class="context-header__action"
-                        data-test-id="context-manage-categories"
-                        (click)="openManageCategories()"
-                        [disabled]="!canManageXtreamCategories()"
-                        [matTooltip]="
-                            'WORKSPACE.CONTEXT.MANAGE_CATEGORIES' | translate
-                        "
-                        [attr.aria-label]="
-                            'WORKSPACE.CONTEXT.MANAGE_CATEGORIES' | translate
-                        "
-                    >
-                        <mat-icon>tune</mat-icon>
-                    </button>
-                }
                 @if (canHideCategories()) {
                     <button
                         #hideCategoriesButton

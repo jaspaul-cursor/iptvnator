@@ -27,6 +27,4 @@ export * from './lib/vod-sources/vod-source-tags';
 export * from './lib/vod-sources/vod-sources-chip.component';
 export * from './lib/vod-sources/vod-sources-menu.component';
 export * from './lib/watched-badge/watched-badge.component';
-export * from './lib/window-controls/window-controls.component';
-
 export * from './lib/channel-scroll-focus/channel-scroll-focus.directive';

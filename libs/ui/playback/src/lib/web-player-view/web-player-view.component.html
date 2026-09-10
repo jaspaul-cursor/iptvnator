@@ -87,27 +87,11 @@
                 ></div>
             }
         }
-    } @else if (application.embeddedMpv) {
-        <app-embedded-mpv-player
-            #embeddedMpvPlayer
-            [playback]="resolvedPlayback()"
-            [fullscreenTarget]="fullscreenSurface"
-            [mediaTitle]="resolvedMediaTitle()"
-            [recordingFolder]="recordingFolder()"
-            [recordingMetadata]="recordingMetadata()"
-            [seriesNavigation]="seriesNavigation()"
-            (timeUpdate)="handleTimeUpdate($event, application)"
-            (playbackEnded)="playbackEnded.emit()"
-            (previousEpisodeRequested)="previousEpisodeRequested.emit()"
-            (nextEpisodeRequested)="nextEpisodeRequested.emit()"
-            (recordingStopped)="recordingStopped.emit($event)"
-        />
     }
 }
 
 <!-- Sibling of the engine, inside the fullscreen host: survives the engine
-     remount a channel switch causes and stays visible in fullscreen. Off for
-     native-view Embedded MPV, which paints above the DOM. -->
+     remount a channel switch causes and stays visible in fullscreen. -->
 <app-fullscreen-channel-panel
     [stage]="fullscreenSurface"
     [enabled]="channelPanelAvailable()"

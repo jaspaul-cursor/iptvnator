@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, output, ViewEncapsulation } from '@angular/core';
+import { Component, input, ViewEncapsulation } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -19,7 +18,6 @@ import { SettingsPlayerOption } from './settings.models';
     selector: 'app-settings-playback-section',
     imports: [
         CommonModule,
-        MatButtonModule,
         MatCheckboxModule,
         MatFormFieldModule,
         MatIconModule,
@@ -47,11 +45,6 @@ export class SettingsPlaybackSectionComponent {
     readonly form = input.required<FormGroup>();
     readonly players = input.required<SettingsPlayerOption[]>();
     readonly streamFormatEnum = input.required<typeof StreamFormat>();
-    readonly isDesktop = input(false);
-    /** Frame-copy embedded MPV engine is possible on this machine */
-    readonly frameCopyAvailable = input(false);
-    /** Frame-copy engine is what the current app run actually uses */
-    readonly frameCopyActive = input(false);
     readonly supportsManagedExternalPlayers = input(false);
     readonly supportsExternalPlayerPathSettings = input(false);
     /**
@@ -59,7 +52,6 @@ export class SettingsPlaybackSectionComponent {
      * toggle would control nothing in the PWA.
      */
     readonly supportsVodMultiSource = input(false);
-    readonly selectRecordingFolder = output<void>();
 
     isWebPlayerSelected(): boolean {
         return reportsPlaybackFailures(this.form().value.player);
@@ -70,14 +62,11 @@ export class SettingsPlaybackSectionComponent {
      * shared controls own (the player view host). The legacy vendor chrome
      * fullscreens the engine's own element and external MPV/VLC own their
      * own window, so in both cases the toggle would control nothing.
-     * Embedded MPV always renders the shared controls.
      */
     supportsFullscreenChannelPanel(): boolean {
         const value = this.form().value;
         return (
-            (this.isWebPlayerSelected() &&
-                value.webPlayerSharedControls !== false) ||
-            value.player === VideoPlayer.EmbeddedMpv
+            this.isWebPlayerSelected() && value.webPlayerSharedControls !== false
         );
     }
 

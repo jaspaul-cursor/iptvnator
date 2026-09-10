@@ -54,11 +54,6 @@ import {
     STALKER_PLAYLIST_CONNECTION_EDITOR_STATUS,
 } from './stalker-playlist-connection-editor.token';
 
-type DesktopFileSaveBridge = Pick<
-    typeof window.electron,
-    'saveFileDialog' | 'writeFile'
->;
-
 const EPG_URL_PATTERN = /^\s*(http|https|file):\/\/[^ "]+\s*$/;
 
 @Component({
@@ -773,50 +768,6 @@ export class PlaylistInfoComponent {
         const playlistAsString = await firstValueFrom(
             this.playlistsService.getRawPlaylistById(this.playlist._id)
         );
-
-        if (this.runtime.supportsDesktopFileSave) {
-            const desktopFileBridge = window.electron as DesktopFileSaveBridge;
-
-            try {
-                const savePath = await desktopFileBridge.saveFileDialog(
-                    `${this.playlist.title || 'exported'}.m3u8`,
-                    [
-                        {
-                            name: 'Playlist',
-                            extensions: ['m3u8', 'm3u'],
-                        },
-                    ]
-                );
-
-                if (savePath) {
-                    await desktopFileBridge.writeFile(
-                        savePath,
-                        playlistAsString
-                    );
-                    this.snackBar.open(
-                        this.translate.instant(
-                            'HOME.PLAYLISTS.INFO_DIALOG.PLAYLIST_EXPORT_SUCCESS'
-                        ),
-                        this.translate.instant('CLOSE'),
-                        { duration: 3000 }
-                    );
-                }
-
-                return;
-            } catch (error) {
-                console.error('Failed to export playlist:', error);
-                this.snackBar.open(
-                    this.translate.instant(
-                        'HOME.PLAYLISTS.INFO_DIALOG.EXPORT_PLAYLIST_FAILED'
-                    ),
-                    this.translate.instant('CLOSE'),
-                    {
-                        duration: 3000,
-                    }
-                );
-                return;
-            }
-        }
 
         this.downloadPlaylistFile(playlistAsString);
     }

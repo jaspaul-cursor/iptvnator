@@ -36,7 +36,6 @@ import { DataService } from '@iptvnator/services';
 import { dbConfig } from '@iptvnator/shared/interfaces';
 import { AppConfig } from '../environments/environment';
 import { routes } from './app.routes';
-import { ElectronService } from './services/electron.service';
 import { ExternalPlaybackService } from './services/external-playback.service';
 import { PlayerService } from './services/player.service';
 import { providePortalPlaybackPositions } from './services/portal-playback-positions.service';
@@ -93,13 +92,7 @@ export function getInitialLanguage(): string {
     return 'en';
 }
 
-/**
- * Conditionally provides the necessary service based on the current environment
- */
 export function DataFactory() {
-    if (window.electron) {
-        return inject(ElectronService);
-    }
     return inject(PwaService);
 }
 

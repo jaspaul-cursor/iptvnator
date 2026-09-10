@@ -96,14 +96,14 @@ function scheduleEmbeddedMpvPrepare(): void {
     if (
         embeddedMpvPrepareScheduled ||
         typeof window === 'undefined' ||
-        !window.electron?.prepareEmbeddedMpv
+        !window.electron!?.prepareEmbeddedMpv
     ) {
         return;
     }
 
     embeddedMpvPrepareScheduled = true;
     const prepare = () => {
-        void window.electron
+        void window.electron!
             .prepareEmbeddedMpv?.()
             .then((support) => {
                 if (!support?.supported) {
@@ -408,7 +408,7 @@ export const SettingsStore = signalStore(
 
                 if (
                     typeof window === 'undefined' ||
-                    !window.electron?.getEmbeddedMpvSupport
+                    !window.electron!?.getEmbeddedMpvSupport
                 ) {
                     await this.updateSettings({
                         player: DEFAULT_SETTINGS.player,
@@ -418,7 +418,7 @@ export const SettingsStore = signalStore(
 
                 try {
                     const support =
-                        await window.electron.getEmbeddedMpvSupport();
+                        await window.electron!.getEmbeddedMpvSupport();
                     if (!support.supported) {
                         await this.updateSettings({
                             player: DEFAULT_SETTINGS.player,

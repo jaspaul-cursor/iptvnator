@@ -5,13 +5,11 @@ import {
     ElementRef,
     HostListener,
     inject,
-    untracked,
     viewChild,
 } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ExternalPlaybackDockComponent } from '@iptvnator/ui/components';
-import { EmbeddedMpvOverlayVisibilityService } from '@iptvnator/ui/playback';
 import {
     PlaylistDropOverlayComponent,
     PlaylistDropZoneDirective,
@@ -69,9 +67,6 @@ export class WorkspaceShellComponent {
     readonly facade = inject(WorkspaceShellFacade);
     readonly keyboardShortcuts = inject(WorkspaceKeyboardShortcutsService);
     readonly contextDrawer = inject(WorkspaceShellContextDrawerService);
-    private readonly mpvOverlayVisibility = inject(
-        EmbeddedMpvOverlayVisibilityService
-    );
     private readonly header = viewChild<WorkspaceShellHeaderShortcutTarget>(
         'workspaceHeader'
     );
@@ -106,23 +101,6 @@ export class WorkspaceShellComponent {
             wasOpen = open;
         });
 
-        // The Embedded MPV native-view video surface is composited outside
-        // DOM stacking and would paint straight over the drawer regardless
-        // of z-index; registering the open drawer as an external modal
-        // surface hides the native view exactly like a Material dialog does.
-        effect((onCleanup) => {
-            if (!this.contextDrawer.isOpen()) {
-                return;
-            }
-            // untracked: the service reads its own signals while
-            // recomputing; tracked here, that read would make this effect
-            // depend on state its own acquire/release toggles.
-            onCleanup(
-                untracked(() =>
-                    this.mpvOverlayVisibility.acquireExternalModalSurface()
-                )
-            );
-        });
     }
 
     // Typed Event, not KeyboardEvent: Angular types a key-filtered host

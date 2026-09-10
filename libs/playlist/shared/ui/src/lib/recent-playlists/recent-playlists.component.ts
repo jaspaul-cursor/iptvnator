@@ -266,13 +266,7 @@ export class RecentPlaylistsComponent {
 
         this.setPendingDeletion(item._id, true);
         try {
-            const deleted = await this.playlistDeleteAction.deletePlaylist(
-                item,
-                {
-                    onEvent: (event) =>
-                        this.updateBusyOperation(item._id, event),
-                }
-            );
+            const deleted = await this.playlistDeleteAction.deletePlaylist(item);
             if (deleted) {
                 if (item.serverUrl) {
                     measureRendererPerformancePhase(

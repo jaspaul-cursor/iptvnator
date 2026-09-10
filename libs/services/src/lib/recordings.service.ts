@@ -51,7 +51,7 @@ export class RecordingsService implements OnDestroy {
         // trailing refresh if the listener already exists. Recording pings
         // are rare, so a missed one would not self-heal until the 15 s poll
         // (armed only once an active row is already visible).
-        this.unsubscribe = window.electron.onRecordingsUpdate?.(() => {
+        this.unsubscribe = window.electron!.onRecordingsUpdate?.(() => {
             this.loadRecordings();
         });
         await this.loadRecordings();
@@ -66,7 +66,7 @@ export class RecordingsService implements OnDestroy {
 
         return this.listLoadState.run(async () => {
             try {
-                const list = await window.electron.recordingsGetList?.();
+                const list = await window.electron!.recordingsGetList?.();
                 this.recordings.set(list ?? []);
                 this.listLoadState.markSucceeded();
             } catch (error) {
@@ -82,7 +82,7 @@ export class RecordingsService implements OnDestroy {
     async getRecording(recordingId: number): Promise<RecordingItem | null> {
         if (!this.isAvailable()) return null;
         try {
-            return (await window.electron.recordingsGet?.(recordingId)) ?? null;
+            return (await window.electron!.recordingsGet?.(recordingId)) ?? null;
         } catch (error) {
             console.error(
                 '[RecordingsService] Error getting recording:',
@@ -96,7 +96,7 @@ export class RecordingsService implements OnDestroy {
         recordingId: number
     ): Promise<ElectronBridgeErrorResult> {
         return this.runAction('stop', () =>
-            window.electron.recordingsStop?.(recordingId)
+            window.electron!.recordingsStop?.(recordingId)
         );
     }
 
@@ -105,7 +105,7 @@ export class RecordingsService implements OnDestroy {
     ): Promise<ElectronBridgeErrorResult> {
         return this.runAction(
             'remove',
-            () => window.electron.recordingsRemove?.(recordingId),
+            () => window.electron!.recordingsRemove?.(recordingId),
             // The ping fires from the backend too, but refreshing directly
             // keeps the UI honest if the broadcast is missed.
             true
@@ -117,19 +117,19 @@ export class RecordingsService implements OnDestroy {
         programs: RecordingProgramSnapshot[]
     ): Promise<ElectronBridgeErrorResult> {
         return this.runAction('update programs', () =>
-            window.electron.recordingsUpdatePrograms?.(targetPath, programs)
+            window.electron!.recordingsUpdatePrograms?.(targetPath, programs)
         );
     }
 
     async revealFile(filePath: string): Promise<ElectronBridgeErrorResult> {
         return this.runAction('reveal', () =>
-            window.electron.recordingsRevealFile?.(filePath)
+            window.electron!.recordingsRevealFile?.(filePath)
         );
     }
 
     async playFile(filePath: string): Promise<ElectronBridgeErrorResult> {
         return this.runAction('play', () =>
-            window.electron.recordingsPlayFile?.(filePath)
+            window.electron!.recordingsPlayFile?.(filePath)
         );
     }
 

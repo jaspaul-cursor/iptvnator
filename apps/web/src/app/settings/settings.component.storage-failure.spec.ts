@@ -12,7 +12,6 @@ import {
     createEpgBridgeStub,
     MatSnackBarStub,
     MockSettingsStore,
-    stubSettingsSideEffects,
 } from './test-stubs/settings-test-harness.stub';
 
 /** Matches the snackbar config used by `SettingsSnackbarService.error`. */
@@ -49,7 +48,6 @@ describe('SettingsComponent storage failures', () => {
         snackBar = TestBed.inject(MatSnackBar) as unknown as MatSnackBarStub;
 
         component = fixture.componentInstance;
-        stubSettingsSideEffects(component);
         fixture.detectChanges();
     });
 

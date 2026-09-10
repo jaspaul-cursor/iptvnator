@@ -27,11 +27,9 @@ import {
 import { VodSourceRowComponent } from '@iptvnator/ui/components';
 import { of } from 'rxjs';
 import { PlaybackDiagnosticPanelComponent } from '../playback-diagnostic-panel/playback-diagnostic-panel.component';
-import { ElectronStreamHeadersService } from './electron-stream-headers.service';
 import type { WebPlayerViewComponent as WebPlayerViewComponentInstance } from './web-player-view.component';
 import {
     StubArtPlayerComponent,
-    StubEmbeddedMpvPlayerComponent,
     StubFullscreenChannelPanelComponent,
     StubHtmlVideoPlayerComponent,
     StubVjsPlayerComponent,
@@ -79,13 +77,6 @@ describe('WebPlayerViewComponent external recovery integration', () => {
                     useValue: { supportsManagedExternalPlayers: true },
                 },
                 {
-                    provide: ElectronStreamHeadersService,
-                    useValue: {
-                        apply: jest.fn(() => null),
-                        clear: jest.fn(),
-                    },
-                },
-                {
                     provide: SettingsStore,
                     useValue: {
                         showCaptions: () => false,
@@ -112,7 +103,6 @@ describe('WebPlayerViewComponent external recovery integration', () => {
                         MatTooltipModule,
                         PlaybackDiagnosticPanelComponent,
                         StubArtPlayerComponent,
-                        StubEmbeddedMpvPlayerComponent,
                         StubFullscreenChannelPanelComponent,
                         StubHtmlVideoPlayerComponent,
                         StubVjsPlayerComponent,

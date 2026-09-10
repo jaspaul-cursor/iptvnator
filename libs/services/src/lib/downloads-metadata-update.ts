@@ -13,7 +13,7 @@ export async function updateDownloadMetadata(
     if (!host.isAvailable()) return { success: false };
 
     try {
-        const result = await window.electron.downloadsUpdateMetadata(
+        const result = await window.electron!.downloadsUpdateMetadata(
             downloadId,
             metadataSnapshot
         );

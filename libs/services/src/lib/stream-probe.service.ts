@@ -33,7 +33,7 @@ export class StreamProbeService {
     get isAvailable(): boolean {
         return (
             typeof window !== 'undefined' &&
-            typeof window.electron?.probeStreamUrl === 'function'
+            typeof window.electron!?.probeStreamUrl === 'function'
         );
     }
 
@@ -118,7 +118,7 @@ export class StreamProbeService {
         let result: VodSourceProbeResult;
 
         try {
-            let response = await window.electron.probeStreamUrl(
+            let response = await window.electron!.probeStreamUrl(
                 url,
                 method,
                 headers
@@ -129,7 +129,7 @@ export class StreamProbeService {
             // confident lie, so retry once with the ranged GET the main process
             // already supports.
             if (method === 'HEAD' && refusesHeadRequests(response.status)) {
-                response = await window.electron.probeStreamUrl(
+                response = await window.electron!.probeStreamUrl(
                     url,
                     'GET',
                     headers

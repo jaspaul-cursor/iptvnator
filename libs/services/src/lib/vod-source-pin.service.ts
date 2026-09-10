@@ -15,7 +15,7 @@ export class VodSourcePinService {
     get isAvailable(): boolean {
         return (
             typeof window !== 'undefined' &&
-            typeof window.electron?.dbGetVodSourcePin === 'function'
+            typeof window.electron!?.dbGetVodSourcePin === 'function'
         );
     }
 
@@ -31,7 +31,7 @@ export class VodSourcePinService {
         }
 
         try {
-            return await window.electron.dbGetVodSourcePin(matchKeys);
+            return await window.electron!.dbGetVodSourcePin(matchKeys);
         } catch (error) {
             console.warn(
                 'Reading the pinned VOD source failed:',
@@ -54,7 +54,7 @@ export class VodSourcePinService {
 
         try {
             const result =
-                await window.electron.dbClearVodSourcePinsForPlaylist(
+                await window.electron!.dbClearVodSourcePinsForPlaylist(
                     playlistId
                 );
             return result?.success === true;
@@ -102,7 +102,7 @@ export class VodSourcePinService {
             return [];
         }
 
-        return (await window.electron.dbListVodSourcePins(playlistId)) ?? [];
+        return (await window.electron!.dbListVodSourcePins(playlistId)) ?? [];
     }
 
     /**
@@ -124,7 +124,7 @@ export class VodSourcePinService {
         }
 
         try {
-            const result = await window.electron.dbSetVodSourcePin(
+            const result = await window.electron!.dbSetVodSourcePin(
                 pin,
                 retireKeys,
                 aliasKeys
@@ -156,7 +156,7 @@ export class VodSourcePinService {
         }
 
         try {
-            const result = await window.electron.dbReplaceVodSourcePins(
+            const result = await window.electron!.dbReplaceVodSourcePins(
                 playlistId,
                 pins
             );
@@ -178,7 +178,7 @@ export class VodSourcePinService {
         }
 
         try {
-            const result = await window.electron.dbClearVodSourcePin(matchKeys);
+            const result = await window.electron!.dbClearVodSourcePin(matchKeys);
             return result?.success === true;
         } catch (error) {
             console.warn(

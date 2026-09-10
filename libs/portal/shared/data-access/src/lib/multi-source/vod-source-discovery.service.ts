@@ -47,7 +47,7 @@ export class VodSourceDiscoveryService {
     get isAvailable(): boolean {
         return (
             typeof window !== 'undefined' &&
-            typeof window.electron?.dbFindTitleSources === 'function'
+            typeof window.electron!?.dbFindTitleSources === 'function'
         );
     }
 
@@ -64,7 +64,7 @@ export class VodSourceDiscoveryService {
         }
 
         try {
-            const rows = await window.electron.dbFindTitleSources({
+            const rows = await window.electron!.dbFindTitleSources({
                 title: request.title,
                 year: request.year ?? null,
                 excludePlaylistId: request.currentPlaylistId,

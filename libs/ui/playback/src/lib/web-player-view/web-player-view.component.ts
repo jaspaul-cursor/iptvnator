@@ -12,7 +12,6 @@ import {
     output,
     signal,
     untracked,
-    viewChild,
 } from '@angular/core';
 import {
     type PlaybackDiagnostic,
@@ -31,7 +30,6 @@ import {
     type VodSourceDescriptor,
 } from '@iptvnator/shared/interfaces';
 import { ArtPlayerComponent } from '../art-player/art-player.component';
-import { EmbeddedMpvPlayerComponent } from '../embedded-mpv-player/embedded-mpv-player.component';
 import { FullscreenChannelPanelComponent } from '../fullscreen-channel-panel/fullscreen-channel-panel.component';
 import { HtmlVideoPlayerComponent } from '../html-video-player/html-video-player.component';
 import { PlaybackDiagnosticPanelComponent } from '../playback-diagnostic-panel/playback-diagnostic-panel.component';
@@ -44,7 +42,6 @@ import type { SeriesPlaybackNavigation } from '../portal-inline-player/series-pl
 import { OpenInMpvButtonComponent } from '../open-in-mpv-button/open-in-mpv-button.component';
 import { VjsPlayerComponent } from '../vjs-player/vjs-player.component';
 import type { VideoPlayerOptions } from '../vjs-player/vjs-player.types';
-import { ElectronStreamHeadersService } from './electron-stream-headers.service';
 import { ExternalPlaybackRecoveryCoordinator } from './external-playback-recovery-coordinator';
 import {
     type PlaybackBinding,
@@ -57,7 +54,6 @@ import {
 } from './web-player-application-ownership';
 import { createWebPlayerApplicationState } from './web-player-application-state';
 import { resolveWebPlayerMediaTitle } from './web-player-playback-state';
-import { createChannelPanelAvailability } from './web-player-channel-panel-state';
 import { WebPlayerLiveAutoFormat } from './web-player-live-auto-format';
 import { WebPlayerRecoveryController } from './web-player-recovery-controller';
 import {
@@ -80,7 +76,6 @@ function resolveWebPlayerSharedControls(): boolean {
     host: { class: 'web-player-view' },
     imports: [
         ArtPlayerComponent,
-        EmbeddedMpvPlayerComponent,
         FullscreenChannelPanelComponent,
         HtmlVideoPlayerComponent,
         OpenInMpvButtonComponent,
@@ -110,12 +105,7 @@ export class WebPlayerViewComponent implements OnDestroy {
      */
     readonly fullscreenSurface: HTMLElement = inject(ElementRef<HTMLElement>)
         .nativeElement;
-    private readonly embeddedMpvPlayer =
-        viewChild<EmbeddedMpvPlayerComponent>('embeddedMpvPlayer');
-    readonly channelPanelAvailable = createChannelPanelAvailability(
-        () => this.renderedApplications().some((app) => app.embeddedMpv),
-        () => this.embeddedMpvPlayer()?.support() ?? null
-    );
+    readonly channelPanelAvailable = signal(true);
     private readonly runtime = inject(RuntimeCapabilitiesService);
     private readonly settingsStore = inject(SettingsStore);
     private readonly externalPlayback = inject(PORTAL_EXTERNAL_PLAYBACK, {
@@ -125,11 +115,9 @@ export class WebPlayerViewComponent implements OnDestroy {
     private readonly externalRecovery = new ExternalPlaybackRecoveryCoordinator(
         this.externalPlayback
     );
-    private readonly applicationHandoff =
-        new WebPlayerApplicationHandoffCoordinator(
-            inject(ElectronStreamHeadersService),
-            this.recoverySession
-        );
+    private readonly applicationHandoff = new WebPlayerApplicationHandoffCoordinator(
+        this.recoverySession
+    );
 
     readonly streamUrl = input.required<string>();
     readonly playbackSessionKey = input.required<string>();
@@ -141,7 +129,7 @@ export class WebPlayerViewComponent implements OnDestroy {
     readonly seriesNavigation = input<SeriesPlaybackNavigation | null>(null);
     readonly mediaTitle = input<PlayerMediaTitle | null>(null);
     readonly alternativeSources = input<VodSourceDescriptor[]>([]);
-    /** Channel/EPG snapshot for the embedded-MPV recording tracker. */
+    /** Retained for host template compatibility; unused without embedded MPV. */
     readonly recordingMetadata = input<RecordingStartMetadata | null>(null);
 
     readonly timeUpdate = output<{
@@ -155,7 +143,7 @@ export class WebPlayerViewComponent implements OnDestroy {
     readonly playbackEnded = output<void>();
     readonly previousEpisodeRequested = output<void>();
     readonly nextEpisodeRequested = output<void>();
-    /** Re-emitted embedded-MPV clean recording stop (stop enrichment). */
+    /** Retained for host template compatibility; unused without embedded MPV. */
     readonly recordingStopped = output<RecordingStoppedEvent>();
 
     readonly showCaptions = computed(
@@ -261,9 +249,6 @@ export class WebPlayerViewComponent implements OnDestroy {
     readonly resolvedMediaTitle = computed(() =>
         resolveWebPlayerMediaTitle(this.mediaTitle(), this.resolvedPlayback())
     );
-    readonly recordingFolder = computed(
-        () => this.settingsStore.recordingFolder?.() ?? ''
-    );
     get supportsManagedExternalPlayers(): boolean {
         return this.runtime.supportsManagedExternalPlayers;
     }
@@ -281,16 +266,13 @@ export class WebPlayerViewComponent implements OnDestroy {
     >(() => {
         if (this.liveAutoFormat.pending()) return [];
         const binding = this.activeBinding();
-        const embeddedMpv =
-            this.selectedPlayer() === VideoPlayer.EmbeddedMpv && !binding;
-        if (!binding && !embeddedMpv) {
+        if (!binding) {
             return [];
         }
 
         return [
             Object.freeze({
                 binding,
-                embeddedMpv,
                 isLive: this.resolvedIsLive(),
                 sourceRevision: this.playbackSourceRevisionToken(),
                 token: this.playbackApplicationToken(),
@@ -379,14 +361,10 @@ export class WebPlayerViewComponent implements OnDestroy {
                 ownership,
                 currentToken: this.playbackApplicationToken(),
                 currentSourceRevision: this.playbackSourceRevisionToken(),
-                bindingOwned: ownership.binding
-                    ? this.applicationHandoff.owns(
-                          ownership.binding,
-                          ownership.token
-                      )
-                    : false,
-                embeddedMpvSelected:
-                    this.selectedPlayer() === VideoPlayer.EmbeddedMpv,
+                bindingOwned: this.applicationHandoff.owns(
+                    ownership.binding,
+                    ownership.token
+                ),
             })
         ) {
             return;

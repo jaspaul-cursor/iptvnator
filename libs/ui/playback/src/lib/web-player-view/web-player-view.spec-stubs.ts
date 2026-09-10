@@ -1,10 +1,5 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import type { PlaybackDiagnostic } from '@iptvnator/playback/util';
-import type {
-    EmbeddedMpvSupport,
-    RecordingStartMetadata,
-    RecordingStoppedEvent,
-} from '@iptvnator/shared/interfaces';
 
 /**
  * Player stand-ins for WebPlayerViewComponent specs. They mirror the real
@@ -84,23 +79,4 @@ export class StubArtPlayerComponent {
 export class StubFullscreenChannelPanelComponent {
     readonly stage = input<HTMLElement | null>(null);
     readonly enabled = input(true);
-}
-
-@Component({
-    selector: 'app-embedded-mpv-player',
-    template: '<div data-test-id="stub-embedded-mpv-player"></div>',
-})
-export class StubEmbeddedMpvPlayerComponent {
-    readonly support = signal<EmbeddedMpvSupport | null>(null);
-    readonly playback = input.required<unknown>();
-    readonly fullscreenTarget = input<HTMLElement | null>(null);
-    readonly mediaTitle = input<unknown>(null);
-    readonly recordingFolder = input('');
-    readonly recordingMetadata = input<RecordingStartMetadata | null>(null);
-    readonly seriesNavigation = input<unknown>(null);
-    readonly timeUpdate = output<{ currentTime: number; duration: number }>();
-    readonly playbackEnded = output<void>();
-    readonly previousEpisodeRequested = output<void>();
-    readonly nextEpisodeRequested = output<void>();
-    readonly recordingStopped = output<RecordingStoppedEvent>();
 }

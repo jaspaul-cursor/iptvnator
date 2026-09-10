@@ -19,7 +19,6 @@ import {
     MatSnackBarStub,
     MockSettingsStore,
     setSettingsSection,
-    stubSettingsSideEffects,
 } from './test-stubs/settings-test-harness.stub';
 
 /**
@@ -51,7 +50,6 @@ describe('SettingsComponent form', () => {
         snackBar = TestBed.inject(MatSnackBar) as unknown as MatSnackBarStub;
 
         component = fixture.componentInstance;
-        stubSettingsSideEffects(component);
         fixture.detectChanges();
     });
 
@@ -447,8 +445,7 @@ describe('SettingsComponent form', () => {
             settingsStore.updateSettings.mockResolvedValue(undefined);
 
             const webFixture = TestBed.createComponent(SettingsComponent);
-            const webComponent = webFixture.componentInstance;
-            stubSettingsSideEffects(webComponent);
+            const             webComponent = webFixture.componentInstance;
             webFixture.detectChanges();
             await webFixture.whenStable();
 

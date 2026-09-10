@@ -5,8 +5,7 @@ import type {
 } from './web-player-application-state';
 
 export interface PlaybackApplicationOwnership {
-    readonly binding: PlaybackBinding | null;
-    readonly embeddedMpv: boolean;
+    readonly binding: PlaybackBinding;
     readonly isLive: boolean;
     readonly sourceRevision: WebPlayerSourceRevisionToken;
     readonly token: WebPlayerApplicationToken;
@@ -17,7 +16,6 @@ export function ownsPlaybackApplication(options: {
     readonly currentToken: WebPlayerApplicationToken;
     readonly currentSourceRevision: WebPlayerSourceRevisionToken;
     readonly bindingOwned: boolean;
-    readonly embeddedMpvSelected: boolean;
 }): boolean {
     const { ownership } = options;
     if (
@@ -26,8 +24,5 @@ export function ownsPlaybackApplication(options: {
     ) {
         return false;
     }
-    if (ownership.binding) {
-        return !ownership.embeddedMpv && options.bindingOwned;
-    }
-    return ownership.embeddedMpv && options.embeddedMpvSelected;
+    return options.bindingOwned;
 }

@@ -166,9 +166,7 @@ export class WorkspaceContextPanelComponent {
     readonly xtreamCountDisplayMode = computed<'loading' | 'ready'>(() =>
         this.isXtreamCategoryInteractionEnabled() ? 'ready' : 'loading'
     );
-    readonly canManageXtreamCategories = computed(
-        () => this.isXtreamCategories() && this.xtreamSelectedTypeCountsReady()
-    );
+    readonly canManageXtreamCategories = computed(() => false);
     readonly xtreamStatusText = computed(() => {
         if (
             !this.isXtreamCategories() ||
@@ -410,48 +408,6 @@ export class WorkspaceContextPanelComponent {
 
     setCategorySortMode(mode: PortalCategorySortMode): void {
         this.categorySort.setMode(mode);
-    }
-
-    openManageCategories(): void {
-        if (!this.canManageXtreamCategories()) {
-            return;
-        }
-
-        const context = this.context();
-        const section = this.section();
-        const contentType =
-            section === 'series'
-                ? 'series'
-                : section === 'live'
-                  ? 'live'
-                  : 'vod';
-
-        void import('@iptvnator/portal/xtream/feature').then(
-            ({ CategoryManagementDialogComponent }) => {
-                const dialogRef = this.dialog.open(
-                    CategoryManagementDialogComponent,
-                    {
-                        data: {
-                            playlistId: context.playlistId,
-                            contentType,
-                            itemCounts:
-                                this.xtreamStore.getCategoryItemCounts(),
-                        },
-                        width: '500px',
-                        maxHeight: '90vh',
-                    }
-                );
-
-                dialogRef
-                    .afterClosed()
-                    .pipe(takeUntilDestroyed(this.destroyRef))
-                    .subscribe((result) => {
-                        if (result) {
-                            this.xtreamStore.reloadCategories();
-                        }
-                    });
-            }
-        );
     }
 
     hideCategories(): void {

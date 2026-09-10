@@ -82,7 +82,7 @@ export class EpgSourceSettingsService {
     async synchronize(urls: string[] | string | undefined): Promise<void> {
         if (
             typeof window === 'undefined' ||
-            !window.electron?.reconcileEpgSources
+            !window.electron!?.reconcileEpgSources
         )
             return;
         // Fence existing lookups before playlist migration or IPC can yield.
@@ -118,7 +118,7 @@ export class EpgSourceSettingsService {
                 }
             }
             const result =
-                await window.electron.reconcileEpgSources(normalized);
+                await window.electron!.reconcileEpgSources(normalized);
             if (!result.success)
                 throw new Error('EPG source reconciliation failed');
             this.failedReconciliation = undefined;

@@ -22,7 +22,6 @@
                         [form]="settingsForm"
                         [players]="players()"
                         [streamFormatEnum]="streamFormatEnum"
-                        [isDesktop]="isDesktop"
                         [supportsManagedExternalPlayers]="
                             supportsManagedExternalPlayers
                         "
@@ -30,9 +29,6 @@
                             supportsExternalPlayerPathSettings
                         "
                         [supportsVodMultiSource]="supportsVodMultiSource"
-                        [frameCopyAvailable]="embeddedMpv.frameCopyAvailable()"
-                        [frameCopyActive]="embeddedMpv.frameCopyActive()"
-                        (selectRecordingFolder)="selectRecordingFolder()"
                     />
                 }
                 @case ('epg') {
@@ -52,55 +48,13 @@
                 @case ('dashboard') {
                     <app-settings-dashboard-section [form]="settingsForm" />
                 }
-                @case ('remote-control') {
-                    <app-settings-remote-control-section
-                        [form]="settingsForm"
-                        [localIpAddresses]="remoteControl.localIpAddresses()"
-                        [visibleQrCodeIp]="remoteControl.visibleQrCodeIp()"
-                        (toggleQrCode)="remoteControl.toggleQrCode($event)"
-                    />
-                }
                 @case ('tmdb') {
                     <app-settings-tmdb-section [form]="settingsForm" />
                 }
-                @case ('backup') {
-                    <app-settings-backup-section
-                        [isPwa]="isPwa"
-                        [isRemovingAllPlaylists]="
-                            playlistReset.isRemovingAllPlaylists()
-                        "
-                        [isExportingData]="backup.isExportingData()"
-                        (importData)="importData()"
-                        (exportData)="exportData()"
-                    />
-                }
-                @case ('reset') {
-                    <app-settings-reset-section
-                        [isRemovingAllPlaylists]="
-                            playlistReset.isRemovingAllPlaylists()
-                        "
-                        [canRemoveAllPlaylists]="playlistReset.canRemoveAll()"
-                        [playlistDeleteSummary]="playlistReset.deleteSummary()"
-                        [removeAllProgressLabel]="
-                            playlistReset.removeAllProgressLabel()
-                        "
-                        (removeAll)="removeAll()"
-                    />
-                }
                 @case ('about') {
                     <app-settings-about-section
-                        [isDesktop]="isDesktop"
-                        [version]="appUpdate.version()"
+                        [version]="appVersion"
                         [buildCommit]="buildCommit"
-                        [updateMessage]="appUpdate.updateMessage()"
-                        [appUpdateStatus]="appUpdate.status()"
-                        (checkForAppUpdate)="appUpdate.checkForAppUpdate()"
-                        (downloadAppUpdate)="appUpdate.downloadAppUpdate()"
-                        (installAppUpdate)="appUpdate.installAppUpdate()"
-                        (openManualAppUpdate)="appUpdate.openManualAppUpdate()"
-                        (openAppUpdateReleaseNotes)="
-                            appUpdate.openReleaseNotes()
-                        "
                     />
                 }
                 @default {
@@ -110,11 +64,6 @@
                         [themeOptions]="themeOptions"
                         [coverSizeOptions]="coverSizeOptions"
                         [startupBehaviorOptions]="startupBehaviorOptions"
-                        [startupWindowModeOptions]="startupWindowModeOptions"
-                        [supportsPortalConnectivityGuard]="
-                            supportsPortalConnectivityGuard
-                        "
-                        [supportsStartupWindowMode]="supportsStartupWindowMode"
                         (selectTheme)="form.selectTheme($event)"
                         (selectCoverSize)="form.selectCoverSize($event)"
                     />

@@ -75,7 +75,7 @@ export class DownloadsService implements OnDestroy {
         // Subscribe BEFORE the initial load, so a transition pinged while
         // that request is pending is coalesced into a trailing refresh
         // instead of being lost with the pre-transition response.
-        this.unsubscribe = window.electron.onDownloadsUpdate(() => {
+        this.unsubscribe = window.electron!.onDownloadsUpdate(() => {
             this.loadDownloads();
         });
 
@@ -99,7 +99,7 @@ export class DownloadsService implements OnDestroy {
 
         return this.downloadListLoadState.run(async () => {
             try {
-                const list = await window.electron.downloadsGetList();
+                const list = await window.electron!.downloadsGetList();
                 this.downloads.set(list);
                 this.downloadListLoadState.markSucceeded();
             } catch (error) {
@@ -123,7 +123,7 @@ export class DownloadsService implements OnDestroy {
         // dialog, rather than trusting renderer-managed settings.
         try {
             const defaultFolder =
-                await window.electron.downloadsGetDefaultFolder();
+                await window.electron!.downloadsGetDefaultFolder();
             this.downloadFolder.set(defaultFolder);
             return defaultFolder;
         } catch (error) {
@@ -151,7 +151,7 @@ export class DownloadsService implements OnDestroy {
         }
 
         try {
-            const result = await window.electron.downloadsStart({
+            const result = await window.electron!.downloadsStart({
                 ...data,
                 downloadFolder: folder,
             });
@@ -176,7 +176,7 @@ export class DownloadsService implements OnDestroy {
         }
 
         try {
-            return await window.electron.downloadsCancel(downloadId);
+            return await window.electron!.downloadsCancel(downloadId);
         } catch (error) {
             console.error(
                 '[DownloadsService] Error canceling download:',
@@ -200,7 +200,7 @@ export class DownloadsService implements OnDestroy {
         }
 
         try {
-            return await window.electron.downloadsPause(downloadId);
+            return await window.electron!.downloadsPause(downloadId);
         } catch (error) {
             console.error('[DownloadsService] Error pausing download:', error);
             return {
@@ -226,7 +226,7 @@ export class DownloadsService implements OnDestroy {
         }
 
         try {
-            return await window.electron.downloadsResume(downloadId, folder);
+            return await window.electron!.downloadsResume(downloadId, folder);
         } catch (error) {
             console.error('[DownloadsService] Error resuming download:', error);
             return {
@@ -252,7 +252,7 @@ export class DownloadsService implements OnDestroy {
         }
 
         try {
-            return await window.electron.downloadsRetry(downloadId, folder);
+            return await window.electron!.downloadsRetry(downloadId, folder);
         } catch (error) {
             console.error('[DownloadsService] Error retrying download:', error);
             return {
@@ -273,7 +273,7 @@ export class DownloadsService implements OnDestroy {
         }
 
         try {
-            return await window.electron.downloadsRedownloadMissing(downloadId);
+            return await window.electron!.downloadsRedownloadMissing(downloadId);
         } catch (error) {
             console.error(
                 '[DownloadsService] Error re-downloading missing file:',
@@ -295,7 +295,7 @@ export class DownloadsService implements OnDestroy {
         }
 
         try {
-            return await window.electron.downloadsRemove(downloadId);
+            return await window.electron!.downloadsRemove(downloadId);
         } catch (error) {
             console.error('[DownloadsService] Error removing download:', error);
             return {
@@ -324,7 +324,7 @@ export class DownloadsService implements OnDestroy {
         }
 
         try {
-            return await window.electron.downloadsPlayFile(filePath);
+            return await window.electron!.downloadsPlayFile(filePath);
         } catch (error) {
             console.error('[DownloadsService] Error playing file:', error);
             return {
@@ -345,7 +345,7 @@ export class DownloadsService implements OnDestroy {
         }
 
         try {
-            return await window.electron.downloadsRevealFile(filePath);
+            return await window.electron!.downloadsRevealFile(filePath);
         } catch (error) {
             console.error('[DownloadsService] Error revealing file:', error);
             return {
@@ -364,7 +364,7 @@ export class DownloadsService implements OnDestroy {
         }
 
         try {
-            const folder = await window.electron.downloadsSelectFolder();
+            const folder = await window.electron!.downloadsSelectFolder();
             if (folder) {
                 this.downloadFolder.set(folder);
             }
@@ -384,7 +384,7 @@ export class DownloadsService implements OnDestroy {
         }
 
         try {
-            return await window.electron.downloadsClearCompleted(playlistId);
+            return await window.electron!.downloadsClearCompleted(playlistId);
         } catch (error) {
             console.error(
                 '[DownloadsService] Error clearing completed:',

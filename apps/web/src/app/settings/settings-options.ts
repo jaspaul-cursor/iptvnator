@@ -11,7 +11,6 @@ import {
     SettingsPlayerOption,
     SettingsSection,
     StartupBehaviorOption,
-    StartupWindowModeOption,
     ThemeOption,
 } from './settings.models';
 
@@ -75,21 +74,6 @@ export const SETTINGS_STARTUP_BEHAVIOR_OPTIONS: StartupBehaviorOption[] = [
     },
 ];
 
-export const SETTINGS_STARTUP_WINDOW_MODE_OPTIONS: StartupWindowModeOption[] = [
-    {
-        value: 'normal',
-        labelKey: 'SETTINGS.STARTUP_WINDOW_MODE_NORMAL',
-    },
-    {
-        value: 'maximized',
-        labelKey: 'SETTINGS.STARTUP_WINDOW_MODE_MAXIMIZED',
-    },
-    {
-        value: 'fullscreen',
-        labelKey: 'SETTINGS.STARTUP_WINDOW_MODE_FULLSCREEN',
-    },
-];
-
 export const SETTINGS_OS_PLAYER_OPTIONS: SettingsPlayerOption[] = [
     {
         id: VideoPlayer.MPV,
@@ -117,7 +101,6 @@ export const SETTINGS_EMBEDDED_PLAYER_OPTIONS: SettingsPlayerOption[] = [
 ];
 
 export interface SettingsPlayerAvailability {
-    supportsEmbeddedMpv: boolean;
     supportsManagedExternalPlayers: boolean;
     supportsMpvProtocol: boolean;
 }
@@ -127,7 +110,6 @@ export interface SettingsPlayerAvailability {
  * when the current runtime can actually launch them.
  */
 export function buildSettingsPlayerOptions({
-    supportsEmbeddedMpv,
     supportsManagedExternalPlayers,
     supportsMpvProtocol,
 }: SettingsPlayerAvailability): SettingsPlayerOption[] {
@@ -139,28 +121,15 @@ export function buildSettingsPlayerOptions({
             )
           : [];
 
-    return [
-        ...SETTINGS_EMBEDDED_PLAYER_OPTIONS,
-        ...(supportsEmbeddedMpv
-            ? [
-                  {
-                      id: VideoPlayer.EmbeddedMpv,
-                      labelKey: 'SETTINGS.PLAYER_EMBEDDED_MPV',
-                  },
-              ]
-            : []),
-        ...externalPlayers,
-    ];
+    return [...SETTINGS_EMBEDDED_PLAYER_OPTIONS, ...externalPlayers];
 }
 
 export interface SettingsSectionVisibility {
     supportsEpg: boolean;
-    supportsRemoteControl: boolean;
 }
 
 export function buildSettingsSectionNavItems({
     supportsEpg,
-    supportsRemoteControl,
 }: SettingsSectionVisibility): SettingsSection[] {
     return [
         {
@@ -188,32 +157,9 @@ export function buildSettingsSectionNavItems({
             visible: true,
         },
         {
-            // Must match the section's HTML id (`remote-control`) so the
-            // settings-section-scroll directive can resolve the anchor.
-            // Was previously '@iptvnator/ui/remote-control' (the NX lib
-            // name), which meant clicking the nav item silently no-op'd
-            // because document.getElementById of that string returned null.
-            id: 'remote-control',
-            label: 'SETTINGS.NAV_REMOTE',
-            icon: 'smartphone',
-            visible: supportsRemoteControl,
-        },
-        {
             id: 'tmdb',
             label: 'SETTINGS.NAV_TMDB',
             icon: 'movie',
-            visible: true,
-        },
-        {
-            id: 'backup',
-            label: 'SETTINGS.NAV_BACKUP',
-            icon: 'backup',
-            visible: true,
-        },
-        {
-            id: 'reset',
-            label: 'SETTINGS.NAV_RESET',
-            icon: 'delete_sweep',
             visible: true,
         },
         {

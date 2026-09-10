@@ -12,11 +12,6 @@ import { VideoPlayer } from '@iptvnator/shared/interfaces';
  * template (or the `@default` general section), otherwise clicking the nav
  * link routes to `/workspace/settings/:id` and renders the fallback general
  * page instead of the intended section.
- *
- * The id coupling bit the Remote section once already in the scroll-anchor
- * era — its nav id was set to the Nx library name
- * (`@iptvnator/ui/remote-control`) instead of `remote-control`. The guard
- * below catches future rename/copy-paste regressions before they ship.
  */
 describe('buildSettingsSectionNavItems', () => {
     // Anchor on the Nx workspace root (Jest runs from there); avoids
@@ -42,25 +37,19 @@ describe('buildSettingsSectionNavItems', () => {
         return ids;
     }
 
-    it('exposes feature-specific items only when their runtime capabilities are supported', () => {
+    it('exposes the EPG section only when EPG is supported', () => {
         const supportedItems = buildSettingsSectionNavItems({
             supportsEpg: true,
-            supportsRemoteControl: true,
         });
         const unsupportedItems = buildSettingsSectionNavItems({
             supportsEpg: false,
-            supportsRemoteControl: false,
         });
 
         expect(supportedItems.map((item) => item.id)).toEqual(
-            expect.arrayContaining(['dashboard', 'epg', 'remote-control'])
+            expect.arrayContaining(['dashboard', 'epg'])
         );
         expect(
             unsupportedItems.find((item) => item.id === 'epg')?.visible
-        ).toBe(false);
-        expect(
-            unsupportedItems.find((item) => item.id === 'remote-control')
-                ?.visible
         ).toBe(false);
     });
 
@@ -68,7 +57,6 @@ describe('buildSettingsSectionNavItems', () => {
         const navIds = new Set(
             buildSettingsSectionNavItems({
                 supportsEpg: true,
-                supportsRemoteControl: true,
             }).map((item) => item.id)
         );
         const renderableIds = collectRenderableSectionIds();
@@ -87,7 +75,6 @@ describe('buildSettingsSectionNavItems', () => {
 
     it('offers MPV in browser builds through the mpv:// protocol handler', () => {
         const options = buildSettingsPlayerOptions({
-            supportsEmbeddedMpv: false,
             supportsManagedExternalPlayers: false,
             supportsMpvProtocol: true,
         });
@@ -104,17 +91,13 @@ describe('buildSettingsSectionNavItems', () => {
         expect(
             buildSettingsSectionNavItems({
                 supportsEpg: true,
-                supportsRemoteControl: true,
             }).map((item) => item.id)
         ).toEqual([
             'general',
             'playback',
             'epg',
             'dashboard',
-            'remote-control',
             'tmdb',
-            'backup',
-            'reset',
             'about',
         ]);
     });

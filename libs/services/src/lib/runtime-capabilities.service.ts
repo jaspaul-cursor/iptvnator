@@ -1,348 +1,158 @@
 import { Injectable } from '@angular/core';
-import { ElectronBridgeApi } from '@iptvnator/shared/interfaces';
 
-export type RuntimeEnvironment = 'electron' | 'pwa';
-
-type RuntimeElectronBridge = Partial<ElectronBridgeApi>;
-
-// The full method set the position-storage layer may invoke — including the
-// season-batch variants, so a bridge lacking them degrades to the in-memory
-// path wholesale instead of throwing mid-action.
-const playbackPositionStorageMethods = [
-    'dbSavePlaybackPosition',
-    'dbGetPlaybackPosition',
-    'dbGetSeriesPlaybackPositions',
-    'dbGetRecentPlaybackPositions',
-    'dbGetAllPlaybackPositions',
-    'dbClearAllPlaybackPositions',
-    'dbClearPlaybackPosition',
-    'dbSavePlaybackPositionsBatch',
-    'dbClearPlaybackPositionsBatch',
-];
+export type RuntimeEnvironment = 'pwa';
 
 @Injectable({ providedIn: 'root' })
 export class RuntimeCapabilitiesService {
     get environment(): RuntimeEnvironment {
-        return this.isElectron ? 'electron' : 'pwa';
+        return 'pwa';
     }
 
     get isElectron(): boolean {
-        return !!this.electronBridge;
+        return false;
     }
 
     get isPwa(): boolean {
-        return !this.isElectron;
+        return true;
     }
 
     get platform(): string | undefined {
-        const platform = this.electronBridge?.['platform'];
-        return typeof platform === 'string' ? platform : undefined;
+        return undefined;
     }
 
     get isMacOS(): boolean {
-        return this.platform === 'darwin';
+        return false;
     }
 
     get isWindows(): boolean {
-        return this.platform === 'win32';
+        return false;
     }
 
     get isLinux(): boolean {
-        return this.platform === 'linux';
+        return false;
     }
 
-    /**
-     * True when the window has no native title bar and the renderer must
-     * draw its own window-management buttons (Windows/Linux). macOS keeps
-     * the native traffic lights instead.
-     */
     get usesCustomWindowControls(): boolean {
-        return (
-            (this.isWindows || this.isLinux) &&
-            [
-                'minimizeWindow',
-                'toggleMaximizeWindow',
-                'closeWindow',
-                'getWindowState',
-                'onWindowStateChange',
-            ].every((methodName) => this.hasElectronMethod(methodName))
-        );
+        return false;
     }
 
-    /** Desktop-only preference: PWA clients cannot configure the shared server guard. */
     get supportsPortalConnectivityGuard(): boolean {
-        return (
-            this.hasElectronMethod('updateSettings') &&
-            this.hasElectronMethod('resetHostConnectivityGuard')
-        );
+        return false;
     }
 
-    /**
-     * Desktop window mode at launch (normal / maximized / fullscreen) plus
-     * the F11 toggle. The mode reaches the main process through
-     * `updateSettings`, and the toggle is what makes a fullscreen launch
-     * escapable on Windows/Linux, where the title bar is hidden — so the
-     * setting is offered only when both halves exist.
-     */
     get supportsStartupWindowMode(): boolean {
-        return (
-            this.hasElectronMethod('updateSettings') &&
-            this.hasElectronMethod('toggleFullScreenWindow')
-        );
+        return false;
     }
 
     get supportsEpg(): boolean {
-        return (
-            this.supportsEpgImport &&
-            this.supportsEpgProgramLookup &&
-            this.supportsEpgSourceFreshness &&
-            this.supportsEpgDataManagement &&
-            this.supportsEpgGuide &&
-            this.supportsEpgProgramSearch
-        );
+        return false;
     }
 
     get supportsEpgImport(): boolean {
-        return this.hasElectronMethod('fetchEpg');
+        return false;
     }
 
     get supportsEpgProgress(): boolean {
-        return this.hasElectronMethod('onEpgProgress');
+        return false;
     }
 
     get supportsEpgProgramLookup(): boolean {
-        return this.hasElectronMethod('getChannelPrograms');
+        return false;
     }
 
     get supportsEpgCurrentProgramBatch(): boolean {
-        return this.hasElectronMethod('getCurrentProgramsBatch');
+        return false;
     }
 
     get supportsEpgChannelMetadata(): boolean {
-        return this.hasElectronMethod('getEpgChannelMetadata');
+        return false;
     }
 
     get supportsEpgSourceFreshness(): boolean {
-        return this.hasElectronMethod('checkEpgFreshness');
+        return false;
     }
 
     get supportsEpgDataManagement(): boolean {
-        return (
-            this.hasElectronMethod('forceFetchEpg') &&
-            this.hasElectronMethod('clearEpgData') &&
-            this.hasElectronMethod('clearEpgDataForSource')
-        );
+        return false;
     }
 
-    /** Both guide reads exist: programmes for a channel batch and coverage. */
     get supportsEpgGuide(): boolean {
-        return (
-            this.hasElectronMethod('getEpgProgramsForChannels') &&
-            this.hasElectronMethod('getEpgProgramCoverage')
-        );
+        return false;
     }
 
     get supportsEpgProgramSearch(): boolean {
-        return this.hasElectronMethod('searchEpgPrograms');
+        return false;
     }
 
     get supportsEpgMapping(): boolean {
-        return (
-            this.hasElectronMethod('getEpgMapping') &&
-            this.hasElectronMethod('setEpgMapping') &&
-            this.hasElectronMethod('deleteEpgMapping') &&
-            this.hasElectronMethod('searchEpgChannels')
-        );
+        return false;
     }
 
     get supportsSqlite(): boolean {
-        return [
-            'dbDeleteAllPlaylists',
-            'dbDeletePlaylist',
-            'dbGetAppPlaylist',
-            'dbGetAppPlaylists',
-            'dbGetAppState',
-            'dbSetAppState',
-            'dbUpsertAppPlaylist',
-            'dbUpsertAppPlaylists',
-        ].every((methodName) => this.hasElectronMethod(methodName));
+        return false;
     }
 
     get supportsXtreamSqliteDataSource(): boolean {
-        return [
-            'dbGetPlaylist',
-            'dbCreatePlaylist',
-            'dbUpdatePlaylist',
-            'dbDeletePlaylist',
-            'dbHasCategories',
-            'dbGetCategories',
-            'dbSaveCategories',
-            'dbGetAllCategories',
-            'dbUpdateCategoryVisibility',
-            'dbHasContent',
-            'dbGetContent',
-            'dbSaveContent',
-            'dbGetAppState',
-            'dbSetAppState',
-            'dbSearchContent',
-            'dbGetFavorites',
-            'dbAddFavorite',
-            'dbRemoveFavorite',
-            'dbIsFavorite',
-            'dbGetRecentItems',
-            'dbAddRecentItem',
-            'dbRemoveRecentItem',
-            'dbClearPlaylistRecentItems',
-            'dbGetContentByXtreamId',
-            ...playbackPositionStorageMethods,
-            'dbDeleteXtreamContent',
-            'dbRestoreXtreamUserData',
-        ].every((methodName) => this.hasElectronMethod(methodName));
+        return false;
     }
 
     get supportsPlaybackPositionStorage(): boolean {
-        return playbackPositionStorageMethods.every((methodName) =>
-            this.hasElectronMethod(methodName)
-        );
+        return false;
     }
 
     get supportsPlaybackPositionUpdates(): boolean {
-        return this.hasElectronMethod('onPlaybackPositionUpdate');
+        return false;
     }
 
     get supportsDownloads(): boolean {
-        return [
-            'downloadsStart',
-            'downloadsCancel',
-            'downloadsPause',
-            'downloadsResume',
-            'downloadsRetry',
-            'downloadsRedownloadMissing',
-            'downloadsRemove',
-            'downloadsGetList',
-            'downloadsGet',
-            'downloadsGetDefaultFolder',
-            'downloadsSelectFolder',
-            'downloadsRevealFile',
-            'downloadsPlayFile',
-            'downloadsClearCompleted',
-            'onDownloadsUpdate',
-        ].every((methodName) => this.hasElectronMethod(methodName));
+        return false;
     }
 
-    // Deliberately separate from supportsDownloads: that allowlist is
-    // all-or-nothing, and folding the recordings bridge into it would make
-    // older Electron builds lose the entire download manager.
     get supportsRecordings(): boolean {
-        return [
-            'recordingsGetList',
-            'recordingsGet',
-            'recordingsStop',
-            'recordingsRemove',
-            'recordingsUpdatePrograms',
-            'recordingsRevealFile',
-            'recordingsPlayFile',
-            'onRecordingsUpdate',
-        ].every((methodName) => this.hasElectronMethod(methodName));
+        return false;
     }
 
     get supportsPortalActivityStorage(): boolean {
-        return [
-            'dbGetRecentlyViewed',
-            'dbClearRecentlyViewed',
-            'dbGetAllGlobalFavorites',
-            'dbGetGlobalRecentlyAdded',
-            'dbAddFavorite',
-            'dbRemoveFavorite',
-            'dbGetFavorites',
-            'dbReorderGlobalFavorites',
-            'dbGetRecentItems',
-            'dbAddRecentItem',
-            'dbClearPlaylistRecentItems',
-            'dbRemoveRecentItem',
-            'dbRemoveRecentItemsBatch',
-            'dbGetContentByXtreamId',
-        ].every((methodName) => this.hasElectronMethod(methodName));
+        return false;
     }
 
     get supportsAppStateStorage(): boolean {
-        return ['dbGetAppState', 'dbSetAppState'].every((methodName) =>
-            this.hasElectronMethod(methodName)
-        );
+        return false;
     }
 
     get supportsStalkerPlaylistSqliteSync(): boolean {
-        return ['dbGetPlaylist', 'dbCreatePlaylist'].every((methodName) =>
-            this.hasElectronMethod(methodName)
-        );
+        return false;
     }
 
     get supportsPlaylistRefresh(): boolean {
-        return [
-            'refreshPlaylist',
-            'cancelPlaylistRefresh',
-            'onPlaylistRefreshEvent',
-        ].every((methodName) => this.hasElectronMethod(methodName));
+        return false;
     }
 
     get supportsManagedExternalPlayers(): boolean {
-        return ['openInMpv', 'openInVlc'].every((methodName) =>
-            this.hasElectronMethod(methodName)
-        );
+        return false;
     }
 
-    /**
-     * Browser/PWA builds can hand streams to a locally installed MPV through
-     * the `mpv://` URL handler. Electron keeps using managed MPV/VLC instead.
-     */
     get supportsMpvProtocol(): boolean {
-        return this.isPwa;
+        return true;
     }
 
     get supportsExternalPlayerPathSettings(): boolean {
-        return ['setMpvPlayerPath', 'setVlcPlayerPath'].every((methodName) =>
-            this.hasElectronMethod(methodName)
-        );
+        return false;
     }
 
     get supportsEmbeddedMpv(): boolean {
-        return this.hasElectronMethod('prepareEmbeddedMpv');
+        return false;
     }
 
     get supportsDesktopFileSave(): boolean {
-        return (
-            this.hasElectronMethod('saveFileDialog') &&
-            this.hasElectronMethod('writeFile')
-        );
+        return false;
     }
 
     get supportsRemoteControl(): boolean {
-        return (
-            this.hasElectronMethod('updateRemoteControlStatus') &&
-            this.hasElectronMethod('onChannelChange') &&
-            this.hasElectronMethod('onRemoteControlCommand')
-        );
+        return false;
     }
 
     get supportsXtreamSectionNavigation(): boolean {
-        return (
-            this.isPwa ||
-            this.supportsXtreamSqliteDataSource ||
-            this.hasElectronMethod('xtreamRequest')
-        );
-    }
-
-    private hasElectronMethod(methodName: string): boolean {
-        const bridge = this.electronBridge as
-            Record<string, unknown> | undefined;
-        return typeof bridge?.[methodName] === 'function';
-    }
-
-    private get electronBridge(): RuntimeElectronBridge | undefined {
-        if (typeof window === 'undefined') {
-            return undefined;
-        }
-
-        return window.electron;
+        return true;
     }
 }

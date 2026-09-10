@@ -189,11 +189,7 @@ export class PwaService extends DataService {
         contentInfo?: PlayerContentInfo;
         startTime?: number;
     }): ExternalPlayerSession | undefined {
-        const contentType = payload.contentInfo?.contentType;
-        const isLive =
-            contentType === 'live' ||
-            contentType === undefined ||
-            contentType === 'radio';
+        const isLive = payload.contentInfo?.contentType === undefined;
 
         return (
             this.mpvProtocol.openPlayback({

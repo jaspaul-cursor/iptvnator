@@ -102,7 +102,7 @@ export class CatalogTitleMatchService {
     get isAvailable(): boolean {
         return (
             typeof window !== 'undefined' &&
-            typeof window.electron?.dbMatchTitles === 'function'
+            typeof window.electron!?.dbMatchTitles === 'function'
         );
     }
 
@@ -112,7 +112,7 @@ export class CatalogTitleMatchService {
         }
 
         try {
-            return await window.electron.dbMatchTitles(titles);
+            return await window.electron!.dbMatchTitles(titles);
         } catch (error) {
             console.warn('Cross-playlist title matching failed:', error);
             return [];

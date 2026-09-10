@@ -28,12 +28,10 @@ import { of } from 'rxjs';
 import { PlaybackDiagnosticPanelComponent } from '../playback-diagnostic-panel/playback-diagnostic-panel.component';
 import {
     StubArtPlayerComponent,
-    StubEmbeddedMpvPlayerComponent,
     StubFullscreenChannelPanelComponent,
     StubHtmlVideoPlayerComponent,
     StubVjsPlayerComponent,
 } from './web-player-view.spec-stubs';
-import { ElectronStreamHeadersService } from './electron-stream-headers.service';
 import type { WebPlayerViewComponent as WebPlayerViewComponentInstance } from './web-player-view.component';
 
 jest.unstable_mockModule('video.js', () => ({ default: jest.fn() }));
@@ -56,22 +54,6 @@ describe('WebPlayerViewComponent live format integration', () => {
         typeof signal<ExternalPlayerSession | null>
     >;
     let closeExternalSession: jest.Mock<Promise<void>, [ExternalPlayerSession]>;
-    let holdHeaderHandoff: boolean;
-    let headerResolvers: Array<(stillCurrent: boolean) => void>;
-    let headerRejectors: Array<(reason?: unknown) => void>;
-    const streamHeaders = {
-        apply: jest.fn(
-            () =>
-                (holdHeaderHandoff
-                    ? new Promise<boolean>((resolve, reject) => {
-                          headerResolvers.push(resolve);
-                          headerRejectors.push(reject);
-                      })
-                    : null) as Promise<boolean> | null
-        ),
-        clear: jest.fn(),
-    };
-
     beforeAll(async () => {
         ({ WebPlayerViewComponent } =
             await import('./web-player-view.component'));
@@ -88,21 +70,12 @@ describe('WebPlayerViewComponent live format integration', () => {
                 updatedAt: '2026-08-08T10:00:02.000Z',
             });
         });
-        holdHeaderHandoff = false;
-        headerResolvers = [];
-        headerRejectors = [];
-        streamHeaders.apply.mockClear();
-        streamHeaders.clear.mockClear();
         await TestBed.configureTestingModule({
             deferBlockBehavior: DeferBlockBehavior.Playthrough,
             imports: [WebPlayerViewComponent, TranslateModule.forRoot()],
             providers: [
                 { provide: StorageMap, useValue: storage },
                 { provide: RuntimeCapabilitiesService, useValue: runtime },
-                {
-                    provide: ElectronStreamHeadersService,
-                    useValue: streamHeaders,
-                },
                 {
                     provide: SettingsStore,
                     useValue: {
@@ -130,7 +103,6 @@ describe('WebPlayerViewComponent live format integration', () => {
                         MatTooltipModule,
                         PlaybackDiagnosticPanelComponent,
                         StubArtPlayerComponent,
-                        StubEmbeddedMpvPlayerComponent,
                         StubFullscreenChannelPanelComponent,
                         StubHtmlVideoPlayerComponent,
                         StubVjsPlayerComponent,
@@ -207,7 +179,7 @@ describe('WebPlayerViewComponent live format integration', () => {
         expect(component.visiblePlaybackDiagnostic()).not.toBeNull();
     });
 
-    it('destroys the previous transport before the TS header handoff', async () => {
+    it('destroys the previous transport before the TS fallback render', async () => {
         fixture.componentRef.setInput('playback', {
             streamUrl: 'https://example.com/live.m3u8',
             title: 'Live',
@@ -222,15 +194,11 @@ describe('WebPlayerViewComponent live format integration', () => {
         player.injector
             .get(DestroyRef)
             .onDestroy(() => events.push('destroy-hls'));
-        streamHeaders.apply.mockImplementationOnce(() => {
-            events.push('ts-headers');
-            return null;
-        });
         (player.componentInstance as StubVjsPlayerComponent).playbackIssue.emit(
             { ...networkIssue('videojs'), httpStatus: 403 }
         );
         await render();
-        expect(events).toEqual(['destroy-hls', 'ts-headers']);
+        expect(events).toEqual(['destroy-hls']);
     });
 
     it('ignores playing and failure from the old channel before the new render', async () => {
