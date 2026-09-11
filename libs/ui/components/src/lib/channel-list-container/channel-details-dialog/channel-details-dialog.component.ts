@@ -7,10 +7,17 @@ import {
     MatDialogModule,
 } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslatePipe } from '@ngx-translate/core';
 import { EpgRuntimeBridgeService } from '@iptvnator/epg/data-access';
+import { DataService, SettingsStore } from '@iptvnator/services';
 import { getM3uArchiveDays, isM3uCatchupPlaybackSupported } from '@iptvnator/shared/m3u-utils';
-import { Channel } from '@iptvnator/shared/interfaces';
+import {
+    Channel,
+    OPEN_MPV_PLAYER,
+    VideoPlayer,
+    canOpenViaMpvProtocol,
+} from '@iptvnator/shared/interfaces';
 import { resolveChannelEpgLookupKey } from '@iptvnator/m3u-state';
 import { EpgMappingDialogComponent } from '../epg-mapping-dialog/epg-mapping-dialog.component';
 
@@ -38,12 +45,21 @@ interface HeroStat {
     templateUrl: './channel-details-dialog.component.html',
     styleUrls: ['./channel-details-dialog.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [ClipboardModule, MatButtonModule, MatDialogModule, MatIconModule, TranslatePipe],
+    imports: [
+        ClipboardModule,
+        MatButtonModule,
+        MatDialogModule,
+        MatIconModule,
+        MatTooltipModule,
+        TranslatePipe,
+    ],
 })
 export class ChannelDetailsDialogComponent {
     readonly channel = inject<Channel>(MAT_DIALOG_DATA);
     private readonly dialog = inject(MatDialog);
     private readonly epgBridge = inject(EpgRuntimeBridgeService);
+    private readonly settingsStore = inject(SettingsStore);
+    private readonly dataService = inject(DataService, { optional: true });
     readonly supportsEpgMapping = this.epgBridge.supportsEpgMapping;
 
     readonly archiveDays = getM3uArchiveDays(this.channel);
@@ -191,6 +207,24 @@ export class ChannelDetailsDialogComponent {
         }
 
         return { labelKey, monospace, value: normalized };
+    }
+
+    get showOpenInMpv(): boolean {
+        return (
+            this.settingsStore.player?.() !== VideoPlayer.MPV &&
+            canOpenViaMpvProtocol(this.channel.url)
+        );
+    }
+
+    openInMpv(): void {
+        if (!this.showOpenInMpv) {
+            return;
+        }
+
+        this.dataService?.sendIpcEvent(OPEN_MPV_PLAYER, {
+            url: this.channel.url,
+            title: this.channel.name,
+        });
     }
 
     openEpgMapping(): void {

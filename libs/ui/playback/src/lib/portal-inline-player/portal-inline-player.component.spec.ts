@@ -2,8 +2,8 @@ import { Component, input, output, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
-import { SettingsStore } from '@iptvnator/services';
-import { ResolvedPortalPlayback } from '@iptvnator/shared/interfaces';
+import { SettingsStore, DataService } from '@iptvnator/services';
+import { ResolvedPortalPlayback, VideoPlayer } from '@iptvnator/shared/interfaces';
 import { PlaybackFallbackRequest } from '@iptvnator/playback/util';
 import type { PortalInlinePlayerComponent as PortalInlinePlayerComponentInstance } from './portal-inline-player.component';
 
@@ -448,6 +448,82 @@ describe('PortalInlinePlayerComponent', () => {
 
             expect(component.ambientImageStyle()).toBeNull();
             expect(ambientEl()).toBeNull();
+        });
+    });
+
+    describe('Open in MPV', () => {
+        let sendIpcEvent: jest.Mock;
+        let player: ReturnType<typeof signal<VideoPlayer>>;
+
+        async function setupOpenInMpv(savedPlayer: VideoPlayer): Promise<void> {
+            TestBed.resetTestingModule();
+            sendIpcEvent = jest.fn();
+            player = signal(savedPlayer);
+            await TestBed.configureTestingModule({
+                imports: [
+                    PortalInlinePlayerComponent,
+                    TranslateModule.forRoot(),
+                ],
+                providers: [
+                    {
+                        provide: SettingsStore,
+                        useValue: {
+                            player,
+                            stripCountryPrefix: signal(false),
+                        },
+                    },
+                    {
+                        provide: DataService,
+                        useValue: { sendIpcEvent },
+                    },
+                ],
+            })
+                .overrideComponent(PortalInlinePlayerComponent, {
+                    remove: { imports: [WebPlayerViewComponent] },
+                    add: { imports: [StubWebPlayerViewComponent] },
+                })
+                .compileComponents();
+
+            fixture = TestBed.createComponent(PortalInlinePlayerComponent);
+            fixture.componentRef.setInput(
+                'playbackSessionKey',
+                'host-owned-session-key'
+            );
+            component = fixture.componentInstance;
+        }
+
+        it('sits beside Copy stream URL when another player is selected', async () => {
+            await setupOpenInMpv(VideoPlayer.Html5Player);
+            fixture.componentRef.setInput('playback', {
+                streamUrl: 'https://example.com/live.ts',
+                title: 'News',
+            });
+            fixture.detectChanges();
+
+            const button = fixture.nativeElement.querySelector(
+                '[data-test-id="inline-open-in-mpv"]'
+            ) as HTMLButtonElement;
+            expect(button).not.toBeNull();
+            button.click();
+            expect(sendIpcEvent).toHaveBeenCalledWith('OPEN_MPV_PLAYER', {
+                url: 'https://example.com/live.ts',
+                title: 'News',
+            });
+        });
+
+        it('hides the action when MPV is already the saved player', async () => {
+            await setupOpenInMpv(VideoPlayer.MPV);
+            fixture.componentRef.setInput('playback', {
+                streamUrl: 'https://example.com/live.ts',
+                title: 'News',
+            });
+            fixture.detectChanges();
+
+            expect(
+                fixture.nativeElement.querySelector(
+                    '[data-test-id="inline-open-in-mpv"]'
+                )
+            ).toBeNull();
         });
     });
 });

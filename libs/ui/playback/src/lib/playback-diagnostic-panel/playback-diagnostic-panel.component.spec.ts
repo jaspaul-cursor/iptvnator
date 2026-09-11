@@ -4,6 +4,8 @@ import { resolve } from 'node:path';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { signal } from '@angular/core';
+import { DataService, SettingsStore } from '@iptvnator/services';
 import {
     PlaybackDiagnosticCode,
     PlaybackDiagnosticSource,
@@ -12,9 +14,10 @@ import {
     type PlaybackRecommendation,
     type PlaybackRecommendationTarget,
 } from '@iptvnator/playback/util';
-import type {
-    ResolvedPortalPlayback,
-    VodSourceDescriptor,
+import {
+    VideoPlayer,
+    type ResolvedPortalPlayback,
+    type VodSourceDescriptor,
 } from '@iptvnator/shared/interfaces';
 import { PlaybackDiagnosticPanelComponent } from './playback-diagnostic-panel.component';
 import type { ExternalRecoveryStates } from '../web-player-view/external-playback-recovery';
@@ -121,12 +124,26 @@ function externalStates(
 describe('PlaybackDiagnosticPanelComponent', () => {
     let fixture: ComponentFixture<PlaybackDiagnosticPanelComponent>;
     let component: PlaybackDiagnosticPanelComponent;
+    let sendIpcEvent: jest.Mock;
+    let player: ReturnType<typeof signal<VideoPlayer>>;
 
     beforeEach(async () => {
+        sendIpcEvent = jest.fn();
+        player = signal(VideoPlayer.VideoJs);
         await TestBed.configureTestingModule({
             imports: [
                 PlaybackDiagnosticPanelComponent,
                 TranslateModule.forRoot(),
+            ],
+            providers: [
+                {
+                    provide: SettingsStore,
+                    useValue: { player },
+                },
+                {
+                    provide: DataService,
+                    useValue: { sendIpcEvent },
+                },
             ],
         })
             .overrideComponent(PlaybackDiagnosticPanelComponent, {
@@ -151,6 +168,7 @@ describe('PlaybackDiagnosticPanelComponent', () => {
                 EXTERNAL_STARTED: 'Player started',
             },
             PORTALS: {
+                OPEN_IN_MPV: 'Open in MPV',
                 MULTI_SOURCE: {
                     MORE_SOURCES: '{{count}} more sources',
                     TRY_ANOTHER_SOURCE: 'Try another source',
@@ -547,10 +565,40 @@ describe('PlaybackDiagnosticPanelComponent', () => {
         expect(copy.textContent).toContain(
             'PLAYBACK_DIAGNOSTICS.ACTION_COPY_URL'
         );
+        const openInMpv = fixture.nativeElement.querySelector(
+            '[data-test-id="playback-open-in-mpv"]'
+        ) as HTMLButtonElement;
+        expect(openInMpv).not.toBeNull();
+        expect(openInMpv.textContent).toContain('Open in MPV');
         expect(details).not.toBeNull();
         expect(details.textContent).toContain(
             'PLAYBACK_DIAGNOSTICS.DETAILS_SUMMARY'
         );
+    });
+
+    it('opens the copied stream in MPV when another player is selected', () => {
+        fixture.detectChanges();
+
+        const openInMpv = fixture.nativeElement.querySelector(
+            '[data-test-id="playback-open-in-mpv"]'
+        ) as HTMLButtonElement;
+        openInMpv.click();
+
+        expect(sendIpcEvent).toHaveBeenCalledWith('OPEN_MPV_PLAYER', {
+            url: PLAYBACK.streamUrl,
+            title: PLAYBACK.title,
+        });
+    });
+
+    it('hides Open in MPV when MPV is already the saved player', () => {
+        player.set(VideoPlayer.MPV);
+        fixture.detectChanges();
+
+        expect(
+            fixture.nativeElement.querySelector(
+                '[data-test-id="playback-open-in-mpv"]'
+            )
+        ).toBeNull();
     });
 
     it('uses runtime capability for browser-access guidance without implying an external action', () => {

@@ -11,6 +11,7 @@ import { config as rxjsConfig, EMPTY } from 'rxjs';
 import {
     buildHostConnectivityFastFailMessage,
     CONNECTIVITY_GUARD_RESET,
+    OPEN_MPV_PLAYER,
     PLAYLIST_PARSE_BY_URL,
     PLAYLIST_UPDATE,
     STALKER_REQUEST,
@@ -72,6 +73,47 @@ describe('PwaService', () => {
         service.sendIpcEvent(PLAYLIST_PARSE_BY_URL);
         service.sendIpcEvent(PLAYLIST_PARSE_BY_URL, {});
 
+        expect(http.match(() => true)).toHaveLength(0);
+    });
+
+    it('opens OPEN_MPV_PLAYER through a temporary mpv:// anchor', () => {
+        const click = jest.fn();
+        const remove = jest.fn();
+        const anchor = {
+            href: '',
+            rel: '',
+            style: { display: '' },
+            click,
+            remove,
+        };
+        jest.spyOn(document, 'createElement').mockReturnValue(
+            anchor as unknown as HTMLAnchorElement
+        );
+        jest.spyOn(document.body, 'appendChild').mockImplementation(
+            () => anchor as unknown as HTMLAnchorElement
+        );
+
+        const streamUrl = 'https://cdn.example.com/live/news.ts';
+        service.sendIpcEvent(OPEN_MPV_PLAYER, {
+            url: streamUrl,
+            title: 'News',
+        });
+
+        expect(document.createElement).toHaveBeenCalledWith('a');
+        expect(anchor.href).toBe(`mpv://${encodeURIComponent(streamUrl)}`);
+        expect(click).toHaveBeenCalledTimes(1);
+        expect(remove).toHaveBeenCalledTimes(1);
+        expect(http.match(() => true)).toHaveLength(0);
+    });
+
+    it('ignores OPEN_MPV_PLAYER without a stream URL', () => {
+        const createElement = jest.spyOn(document, 'createElement');
+
+        service.sendIpcEvent(OPEN_MPV_PLAYER);
+        service.sendIpcEvent(OPEN_MPV_PLAYER, {});
+        service.sendIpcEvent(OPEN_MPV_PLAYER, { title: 'News' });
+
+        expect(createElement).not.toHaveBeenCalled();
         expect(http.match(() => true)).toHaveLength(0);
     });
 

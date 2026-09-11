@@ -199,6 +199,17 @@
                 <mat-icon aria-hidden="true">content_copy</mat-icon>
                 {{ 'PLAYBACK_DIAGNOSTICS.ACTION_COPY_URL' | translate }}
             </button>
+            @if (showOpenInMpv()) {
+                <button
+                    class="web-player-diagnostic__utility-button"
+                    type="button"
+                    data-test-id="playback-open-in-mpv"
+                    (click)="openInMpv()"
+                >
+                    <mat-icon aria-hidden="true">play_circle</mat-icon>
+                    {{ 'PORTALS.OPEN_IN_MPV' | translate }}
+                </button>
+            }
 
             <span
                 class="web-player-diagnostic__divider"

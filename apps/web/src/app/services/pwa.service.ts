@@ -15,9 +15,13 @@ import {
 } from 'rxjs';
 import { DataService } from '@iptvnator/services';
 import {
+    buildExternalMpvLaunchHref,
     CONNECTIVITY_GUARD_RESET,
+    dispatchMpvProtocolUrl,
+    MpvProtocolDispatchDocument,
     ERROR,
     isHostConnectivityFastFailMessage,
+    OPEN_MPV_PLAYER,
     Playlist,
     PLAYLIST_PARSE_BY_URL,
     PLAYLIST_UPDATE,
@@ -163,7 +167,39 @@ export class PwaService extends DataService {
             ) as T;
         }
 
+        if (type === OPEN_MPV_PLAYER) {
+            this.openMpvPlayer(payload);
+            return undefined as T;
+        }
+
         return undefined as T;
+    }
+
+    /**
+     * Browser/PWA stand-in for Electron's managed MPV launch. Headers cannot
+     * travel on `mpv://` or the Android intent; a missing URL is a no-op.
+     */
+    private openMpvPlayer(payload: unknown): void {
+        if (!payload || typeof payload !== 'object') {
+            return;
+        }
+
+        const url = (payload as { url?: unknown }).url;
+        if (typeof url !== 'string') {
+            return;
+        }
+
+        const title = (payload as { title?: unknown }).title;
+        const href = buildExternalMpvLaunchHref(
+            url,
+            globalThis.navigator?.userAgent ?? '',
+            typeof title === 'string' ? title : undefined
+        );
+        if (!href) {
+            return;
+        }
+
+        dispatchMpvProtocolUrl(href, document as MpvProtocolDispatchDocument);
     }
 
     /**

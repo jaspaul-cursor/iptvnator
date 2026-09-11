@@ -1,7 +1,8 @@
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
-import { buildSettingsSectionNavItems } from './settings-options';
+import { buildSettingsSectionNavItems, buildSettingsPlayerOptions } from './settings-options';
+import { VideoPlayer } from '@iptvnator/shared/interfaces';
 
 /**
  * Every nav-item id must match a `@case ('...')` label in the settings page
@@ -97,6 +98,49 @@ describe('buildSettingsSectionNavItems', () => {
             'backup',
             'reset',
             'about',
+        ]);
+    });
+});
+
+describe('buildSettingsPlayerOptions', () => {
+    it('offers MPV without VLC in the PWA', () => {
+        const players = buildSettingsPlayerOptions({
+            supportsEmbeddedMpv: false,
+            supportsManagedExternalPlayers: false,
+            isPwa: true,
+        });
+
+        expect(players.map((player) => player.id)).toEqual([
+            VideoPlayer.Html5Player,
+            VideoPlayer.VideoJs,
+            VideoPlayer.ArtPlayer,
+            VideoPlayer.MPV,
+        ]);
+    });
+
+    it('keeps VLC Electron-only even when the PWA flag is also set', () => {
+        const players = buildSettingsPlayerOptions({
+            supportsEmbeddedMpv: false,
+            supportsManagedExternalPlayers: true,
+            isPwa: true,
+        });
+
+        expect(players.map((player) => player.id)).toEqual(
+            expect.arrayContaining([VideoPlayer.MPV, VideoPlayer.VLC])
+        );
+    });
+
+    it('hides MPV and VLC when neither managed launch nor PWA is available', () => {
+        const players = buildSettingsPlayerOptions({
+            supportsEmbeddedMpv: false,
+            supportsManagedExternalPlayers: false,
+            isPwa: false,
+        });
+
+        expect(players.map((player) => player.id)).toEqual([
+            VideoPlayer.Html5Player,
+            VideoPlayer.VideoJs,
+            VideoPlayer.ArtPlayer,
         ]);
     });
 });

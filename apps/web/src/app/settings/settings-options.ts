@@ -90,11 +90,13 @@ export const SETTINGS_STARTUP_WINDOW_MODE_OPTIONS: StartupWindowModeOption[] = [
     },
 ];
 
+export const SETTINGS_MPV_PLAYER_OPTION: SettingsPlayerOption = {
+    id: VideoPlayer.MPV,
+    labelKey: 'SETTINGS.PLAYER_MPV',
+};
+
 export const SETTINGS_OS_PLAYER_OPTIONS: SettingsPlayerOption[] = [
-    {
-        id: VideoPlayer.MPV,
-        labelKey: 'SETTINGS.PLAYER_MPV',
-    },
+    SETTINGS_MPV_PLAYER_OPTION,
     {
         id: VideoPlayer.VLC,
         labelKey: 'SETTINGS.PLAYER_VLC',
@@ -119,16 +121,26 @@ export const SETTINGS_EMBEDDED_PLAYER_OPTIONS: SettingsPlayerOption[] = [
 export interface SettingsPlayerAvailability {
     supportsEmbeddedMpv: boolean;
     supportsManagedExternalPlayers: boolean;
+    /** Browser/PWA can open MPV via `mpv://` / mpv-android, but not VLC. */
+    isPwa?: boolean;
 }
 
 /**
  * Built-in web players are always offered; the OS-backed ones only show up
- * when the current runtime can actually launch them.
+ * when the current runtime can actually launch them. The PWA offers MPV
+ * through the protocol/intent helper without also offering VLC.
  */
 export function buildSettingsPlayerOptions({
     supportsEmbeddedMpv,
     supportsManagedExternalPlayers,
+    isPwa = false,
 }: SettingsPlayerAvailability): SettingsPlayerOption[] {
+    const externalPlayers = supportsManagedExternalPlayers
+        ? SETTINGS_OS_PLAYER_OPTIONS
+        : isPwa
+          ? [SETTINGS_MPV_PLAYER_OPTION]
+          : [];
+
     return [
         ...SETTINGS_EMBEDDED_PLAYER_OPTIONS,
         ...(supportsEmbeddedMpv
@@ -139,7 +151,7 @@ export function buildSettingsPlayerOptions({
                   },
               ]
             : []),
-        ...(supportsManagedExternalPlayers ? SETTINGS_OS_PLAYER_OPTIONS : []),
+        ...externalPlayers,
     ];
 }
 

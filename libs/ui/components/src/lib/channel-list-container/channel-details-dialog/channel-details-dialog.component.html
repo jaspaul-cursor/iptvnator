@@ -94,6 +94,19 @@
                 >
                     <mat-icon>content_copy</mat-icon>
                 </button>
+                @if (showOpenInMpv) {
+                    <button
+                        mat-icon-button
+                        type="button"
+                        class="channel-dialog__copy-btn"
+                        data-test-id="channel-open-in-mpv"
+                        [attr.aria-label]="'PORTALS.OPEN_IN_MPV' | translate"
+                        [matTooltip]="'PORTALS.OPEN_IN_MPV' | translate"
+                        (click)="openInMpv()"
+                    >
+                        <mat-icon>play_circle</mat-icon>
+                    </button>
+                }
             </div>
 
             <dl class="channel-detail-list">

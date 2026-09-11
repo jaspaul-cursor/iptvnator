@@ -16,15 +16,17 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
 import {
+    OPEN_MPV_PLAYER,
     PlayerContentInfo,
     ResolvedPortalPlayback,
     VideoPlayer,
+    canOpenViaMpvProtocol,
     type VodSourceDescriptor,
     type VodSourceMatchKind,
 } from '@iptvnator/shared/interfaces';
 import type { PlaybackFallbackRequest } from '@iptvnator/playback/util';
 import type { PlaybackDiagnosticCode } from '@iptvnator/playback/util';
-import { SettingsStore } from '@iptvnator/services';
+import { DataService, SettingsStore } from '@iptvnator/services';
 import { applyChannelNameStrip } from '@iptvnator/shared/m3u-utils';
 import type { PlayerMediaTitle } from '../player-controls';
 import { WebPlayerViewComponent } from '../web-player-view/web-player-view.component';
@@ -87,6 +89,7 @@ export class PortalInlinePlayerComponent {
      */
     readonly playerOverride = input<VideoPlayer | null>(null);
     private readonly settingsStore = inject(SettingsStore);
+    private readonly dataService = inject(DataService, { optional: true });
     // Strip only live-channel titles — VOD/series titles ("Mission:
     // Impossible - Fallout") must never lose their leading segment.
     readonly title = computed(() =>
@@ -96,6 +99,11 @@ export class PortalInlinePlayerComponent {
         )
     );
     readonly streamUrl = computed(() => this.playback()?.streamUrl ?? '');
+    readonly showOpenInMpv = computed(
+        () =>
+            this.settingsStore.player?.() !== VideoPlayer.MPV &&
+            canOpenViaMpvProtocol(this.streamUrl())
+    );
     readonly startTime = computed(() => this.playback()?.startTime ?? 0);
     /**
      * Poster used for the "Ambient mode" fill behind the player. Live channels
@@ -295,6 +303,18 @@ export class PortalInlinePlayerComponent {
 
     onCopied(): void {
         this.streamUrlCopied.emit();
+    }
+
+    openInMpv(): void {
+        const url = this.streamUrl();
+        if (!this.showOpenInMpv() || !url) {
+            return;
+        }
+
+        this.dataService?.sendIpcEvent(OPEN_MPV_PLAYER, {
+            url,
+            title: this.title(),
+        });
     }
 
     onExternalFallbackRequested(request: PlaybackFallbackRequest): void {

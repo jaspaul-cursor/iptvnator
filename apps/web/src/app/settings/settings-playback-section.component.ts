@@ -48,6 +48,8 @@ export class SettingsPlaybackSectionComponent {
     readonly players = input.required<SettingsPlayerOption[]>();
     readonly streamFormatEnum = input.required<typeof StreamFormat>();
     readonly isDesktop = input(false);
+    /** Browser/PWA copy explains the `mpv://` / mpv-android launch path. */
+    readonly isPwa = input(false);
     /** Frame-copy embedded MPV engine is possible on this machine */
     readonly frameCopyAvailable = input(false);
     /** Frame-copy engine is what the current app run actually uses */

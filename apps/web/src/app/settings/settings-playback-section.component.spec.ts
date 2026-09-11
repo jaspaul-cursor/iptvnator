@@ -43,6 +43,9 @@ describe('SettingsPlaybackSectionComponent', () => {
                     VLC_PLAYER_PATH_DESCRIPTION: VLC_PATH_DESCRIPTION,
                     WEB_PLAYER_SHARED_CONTROLS:
                         WEB_PLAYER_SHARED_CONTROLS_LABEL,
+                    VIDEO_PLAYER_DESCRIPTION: 'Select default video player',
+                    VIDEO_PLAYER_DESCRIPTION_PWA:
+                        'MPV must be installed. Desktop browsers need an mpv:// handler; Android opens mpv-android.',
                 },
             },
             true
@@ -429,6 +432,15 @@ describe('SettingsPlaybackSectionComponent', () => {
             ).toBeNull();
         }
     );
+
+    it('explains the mpv:// / mpv-android path in the PWA', () => {
+        fixture.componentRef.setInput('isPwa', true);
+        fixture.detectChanges();
+
+        expect(fixture.nativeElement.textContent).toContain(
+            'MPV must be installed. Desktop browsers need an mpv:// handler; Android opens mpv-android.'
+        );
+    });
 });
 
 function createForm(player = VideoPlayer.VideoJs): FormGroup {

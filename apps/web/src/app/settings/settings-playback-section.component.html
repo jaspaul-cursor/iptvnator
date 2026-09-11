@@ -12,7 +12,14 @@
     <div class="setting-item">
         <div class="setting-item__meta">
             <h4>{{ 'SETTINGS.VIDEO_PLAYER_LABEL' | translate }}</h4>
-            <p>{{ 'SETTINGS.VIDEO_PLAYER_DESCRIPTION' | translate }}</p>
+            <p>
+                {{
+                    (isPwa()
+                        ? 'SETTINGS.VIDEO_PLAYER_DESCRIPTION_PWA'
+                        : 'SETTINGS.VIDEO_PLAYER_DESCRIPTION'
+                    ) | translate
+                }}
+            </p>
         </div>
         <div class="setting-item__control">
             <mat-form-field appearance="outline" subscriptSizing="dynamic">

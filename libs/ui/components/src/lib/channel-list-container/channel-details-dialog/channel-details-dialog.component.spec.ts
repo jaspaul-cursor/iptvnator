@@ -2,12 +2,16 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { TranslateModule } from '@ngx-translate/core';
-import { Channel } from '@iptvnator/shared/interfaces';
+import { signal } from '@angular/core';
+import { DataService, SettingsStore } from '@iptvnator/services';
+import { Channel, VideoPlayer } from '@iptvnator/shared/interfaces';
 import { ChannelDetailsDialogComponent } from './channel-details-dialog.component';
 
 describe('ChannelDetailsDialogComponent', () => {
     let fixture: ComponentFixture<ChannelDetailsDialogComponent>;
     let component: ChannelDetailsDialogComponent;
+    let sendIpcEvent: jest.Mock;
+    let player: ReturnType<typeof signal<VideoPlayer>>;
 
     const channel: Channel = {
         epgParams: 'src=test-playlist',
@@ -39,6 +43,8 @@ describe('ChannelDetailsDialogComponent', () => {
     };
 
     beforeEach(async () => {
+        sendIpcEvent = jest.fn();
+        player = signal(VideoPlayer.VideoJs);
         await TestBed.configureTestingModule({
             imports: [
                 ChannelDetailsDialogComponent,
@@ -49,6 +55,14 @@ describe('ChannelDetailsDialogComponent', () => {
                 {
                     provide: MAT_DIALOG_DATA,
                     useValue: channel,
+                },
+                {
+                    provide: SettingsStore,
+                    useValue: { player },
+                },
+                {
+                    provide: DataService,
+                    useValue: { sendIpcEvent },
                 },
             ],
         }).compileComponents();
@@ -71,5 +85,27 @@ describe('ChannelDetailsDialogComponent', () => {
                 }),
             ])
         );
+    });
+
+    it('opens the stream in MPV beside the copy button when another player is selected', () => {
+        const button = fixture.nativeElement.querySelector(
+            '[data-test-id="channel-open-in-mpv"]'
+        ) as HTMLButtonElement;
+        expect(button).not.toBeNull();
+        button.click();
+        expect(sendIpcEvent).toHaveBeenCalledWith('OPEN_MPV_PLAYER', {
+            url: channel.url,
+            title: channel.name,
+        });
+    });
+
+    it('hides Open in MPV when MPV is already the saved player', () => {
+        player.set(VideoPlayer.MPV);
+        fixture.detectChanges();
+        expect(
+            fixture.nativeElement.querySelector(
+                '[data-test-id="channel-open-in-mpv"]'
+            )
+        ).toBeNull();
     });
 });

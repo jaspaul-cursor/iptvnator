@@ -123,10 +123,15 @@ these limitations explicit in UI, troubleshooting, and release notes:
   `DatabaseService`. `PlaylistsService.deletePlaylist()` runs registered
   cleanup hooks such as the PWA Xtream cleanup so localStorage sidecar data does
   not survive after the source is removed.
-- The Docker/PWA runtime cannot launch MPV, VLC, IINA, Embedded MPV, download
-  manager flows, or Electron remote-control features. If inline browser
-  playback fails, the supported browser fallback is copying the stream URL and
-  opening it manually in an external player.
+- The PWA can open transferable http(s) streams in a locally installed MPV:
+  desktop browsers use `mpv://` (the nested URL is percent-encoded so the
+  handler is not collapsed), and Android opens mpv-android via an `intent://`
+  link. Playback headers (Referer/Origin) cannot travel on that path, and iOS
+  has no launch URL. Radio stays on the inline audio player; DASH/ClearKey
+  stays inline because the keys are not transferable. VLC, IINA, Embedded MPV,
+  download manager flows, and Electron remote-control remain unavailable. If
+  MPV is not installed or the browser drops the custom-scheme gesture after an
+  async resolve, copy the stream URL and open it manually.
 
 Provider URLs are registered before proxy calls so the proxy endpoints do not
 accept raw target URLs in query strings. Registration validates the target URL

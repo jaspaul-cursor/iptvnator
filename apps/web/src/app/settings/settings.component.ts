@@ -156,6 +156,7 @@ export class SettingsComponent
         buildSettingsPlayerOptions({
             supportsEmbeddedMpv: this.embeddedMpv.supported(),
             supportsManagedExternalPlayers: this.supportsManagedExternalPlayers,
+            isPwa: this.isPwa,
         })
     );
 

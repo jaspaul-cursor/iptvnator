@@ -59,6 +59,17 @@
                         <mat-icon>content_copy</mat-icon>
                         {{ 'PORTALS.COPY_STREAM_URL' | translate }}
                     </button>
+                    @if (showOpenInMpv()) {
+                        <button
+                            mat-button
+                            type="button"
+                            data-test-id="inline-open-in-mpv"
+                            (click)="openInMpv()"
+                        >
+                            <mat-icon>play_circle</mat-icon>
+                            {{ 'PORTALS.OPEN_IN_MPV' | translate }}
+                        </button>
+                    }
                     <button
                         mat-stroked-button
                         type="button"

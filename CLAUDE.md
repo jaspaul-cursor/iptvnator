@@ -1105,7 +1105,7 @@ app as a real argument, so it is not an option.
   nominal FPS and aggregate rendition bitrate have separate rows. Unknown
   video bitrate is never filled with aggregate bandwidth. MPV clears dimensions
   on a new file and clears individual diagnostics on unavailable-property events.
-- External players: MPV, VLC (via IPC to Electron backend)
+- External players: MPV, VLC (via IPC to Electron backend). The PWA can also choose MPV in Playback settings and open streams with `mpv://` on desktop or mpv-android on Android.
 - Display sleep during playback: `PlaybackKeepAwakeService`
   (`apps/web/src/app/services/playback-keep-awake.service.ts`) watches every
   `<video>` via document-level capture listeners (media events don't bubble;
@@ -1640,7 +1640,7 @@ IPTVnator supports both Electron (desktop app) and PWA (web browser) to provide 
 - Storage layer switches automatically:
     - Electron → SQLite/Drizzle ORM → `~/.iptvnator/databases/iptvnator.db`
     - PWA → IndexedDB → Browser storage
-- External player support (MPV/VLC) only available in Electron
+- External player support: managed MPV/VLC via IPC in Electron; the PWA can open MPV via `mpv://` / mpv-android. VLC remains Electron-only.
 - File system operations only available in Electron (uploading playlists from disk)
 
 **Base Href Configuration**:

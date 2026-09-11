@@ -410,6 +410,29 @@ describe('SettingsComponent', () => {
             ).toBe(true);
         });
 
+        it('offers MPV without VLC when running as a PWA', () => {
+            fixture.destroy();
+            window.electron = undefined;
+
+            const pwaFixture = TestBed.createComponent(SettingsComponent);
+            const pwaComponent = pwaFixture.componentInstance;
+            stubSettingsSideEffects(pwaComponent);
+            pwaFixture.detectChanges();
+
+            expect(pwaComponent.isPwa).toBe(true);
+            expect(pwaComponent.supportsManagedExternalPlayers).toBe(false);
+            expect(
+                pwaComponent
+                    .players()
+                    .some((player) => player.id === VideoPlayer.MPV)
+            ).toBe(true);
+            expect(
+                pwaComponent
+                    .players()
+                    .some((player) => player.id === VideoPlayer.VLC)
+            ).toBe(false);
+        });
+
         it('opens the playlist folder picker only when the desktop bridge offers one', async () => {
             const selectFolder = jest.fn().mockResolvedValue('/tmp/recordings');
             window.electron = {

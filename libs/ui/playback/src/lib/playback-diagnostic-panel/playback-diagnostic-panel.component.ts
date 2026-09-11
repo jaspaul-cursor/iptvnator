@@ -20,10 +20,14 @@ import {
     type PlaybackRecommendation,
     type PlaybackRecommendationTarget,
 } from '@iptvnator/playback/util';
-import type {
-    ResolvedPortalPlayback,
-    VodSourceDescriptor,
+import {
+    OPEN_MPV_PLAYER,
+    VideoPlayer,
+    canOpenViaMpvProtocol,
+    type ResolvedPortalPlayback,
+    type VodSourceDescriptor,
 } from '@iptvnator/shared/interfaces';
+import { DataService, SettingsStore } from '@iptvnator/services';
 import { VodSourceRowComponent } from '@iptvnator/ui/components';
 import type {
     ExternalRecoveryStates,
@@ -84,6 +88,8 @@ export class PlaybackDiagnosticPanelComponent {
     readonly sourceCheckRequested = output<string>();
 
     private readonly document = inject(DOCUMENT);
+    private readonly settingsStore = inject(SettingsStore);
+    private readonly dataService = inject(DataService, { optional: true });
     private readonly copyResult = signal<{
         issue: PlaybackDiagnostic;
         success: boolean;
@@ -102,9 +108,26 @@ export class PlaybackDiagnosticPanelComponent {
             ? 'PLAYBACK_DIAGNOSTICS.REPORT_COPIED'
             : 'PLAYBACK_DIAGNOSTICS.COPY_FAILED';
     });
+    readonly showOpenInMpv = computed(
+        () =>
+            this.settingsStore.player?.() !== VideoPlayer.MPV &&
+            canOpenViaMpvProtocol(this.playback().streamUrl)
+    );
 
     onReportCopied(success: boolean): void {
         this.copyResult.set({ issue: this.diagnostic(), success });
+    }
+
+    openInMpv(): void {
+        const url = this.playback().streamUrl;
+        if (!this.showOpenInMpv() || !url) {
+            return;
+        }
+
+        this.dataService?.sendIpcEvent(OPEN_MPV_PLAYER, {
+            url,
+            title: this.playback().title,
+        });
     }
 
     readonly visibleAlternatives = computed(() =>
