@@ -72,6 +72,22 @@ export function resolveGridRating(
     return formatGridRating(item.rating_imdb) ?? formatGridRating(item.rating);
 }
 
+/** Stable `@for` track key so reused grid rows keep the correct item binding. */
+export function resolveGridItemKey(
+    item: GridListItem,
+    index: number
+): string {
+    const id =
+        item.id ?? item.xtream_id ?? item.series_id ?? item.stream_id ?? null;
+    if (id != null && String(id).trim() !== '') {
+        return String(id);
+    }
+
+    const title = item.title ?? item.o_name ?? item.name ?? '';
+    const category = item.category_id ?? '';
+    return `${category}:${title}:${index}`;
+}
+
 const BLANK_ARTWORK_URL_PATTERN =
     /(^|\/)blank-icon\.(?:png|jpe?g|webp|gif|svg)(?:[?#].*)?$/i;
 
@@ -105,7 +121,7 @@ function normalizeArtworkUrl(value: string | undefined): string | undefined {
                     </div>
                 }
             } @else {
-                @for (item of items(); track $index) {
+                @for (item of items(); track resolveGridItemKey(item, $index)) {
                     @let i = $any(item);
                     <mat-card
                         [class.grid-card--logo]="variant() === 'logo'"
@@ -292,6 +308,8 @@ export class GridListComponent {
             ? 'CHANNELS.CATCHUP_AVAILABLE_DAYS'
             : 'CHANNELS.CATCHUP_AVAILABLE';
     }
+    protected readonly resolveGridItemKey = resolveGridItemKey;
+
     protected readonly channelTitle = (item: GridListItem): string => {
         const raw = item.title ?? item.o_name ?? item.name ?? '';
         const stripped = applyChannelNameStrip(

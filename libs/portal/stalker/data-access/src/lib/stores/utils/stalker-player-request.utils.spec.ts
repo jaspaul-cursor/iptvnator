@@ -382,6 +382,33 @@ describe('stalker-player-request.utils', () => {
             expect(dataService.sendIpcEvent).not.toHaveBeenCalled();
         });
 
+        it('mints a link for a cross-origin static cmd when preferTokenizedUrl is set', async () => {
+            dataService.sendIpcEvent.mockResolvedValue({
+                js: { cmd: 'http://cdn.example/tmp/movie.mkv?tok=1' },
+            });
+
+            const streamUrl = await fetchStalkerPlaybackLink(deps(), {
+                playlist: PLAYLIST,
+                selectedContentType: 'vod',
+                cmd: 'ffrt3 http://cdn.example/movie.mkv',
+                linkFlags: {
+                    use_http_tmp_link: '0',
+                    use_load_balancing: '0',
+                },
+                preferTokenizedUrl: true,
+            });
+
+            expect(streamUrl).toBe('http://cdn.example/tmp/movie.mkv?tok=1');
+            expect(dataService.sendIpcEvent).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({
+                    params: expect.objectContaining({
+                        action: StalkerPortalActions.CreateLink,
+                    }),
+                })
+            );
+        });
+
         it.each(['use_http_tmp_link', 'use_load_balancing'] as const)(
             'mints a temporary link when %s is set',
             async (flag) => {

@@ -577,6 +577,9 @@ export class StalkerSeriesViewComponent implements OnDestroy {
     readonly mappedSeasons = computed<Record<string, XtreamSerieEpisode[]>>(
         () => {
             const displayItem = this.displayItem();
+            if (!this.isVodSeries() && this.isSerialSeasonsLoading()) {
+                return {};
+            }
             const base = this.isVodSeries()
                 ? mapVodSeriesEpisodes(this.vodSeriesSeasons(), {
                       parentSeriesId: this.toSeriesId(displayItem?.id ?? 0),
@@ -1006,6 +1009,45 @@ export class StalkerSeriesViewComponent implements OnDestroy {
         request.trackLaunch(launch);
         void launch;
     }
+
+    /** Re-mints a tokenized URL for PWA `mpv://` handoffs from inline HTML5. */
+    openInMpvFromInlinePlayback = async (): Promise<void> => {
+        const inline = this.inlinePlayback();
+        const episodeState = this.inlineEpisodeState();
+        const item = this.displayItem();
+        if (!inline || !episodeState || !item) {
+            return;
+        }
+
+        const mappedEpisode = episodeState.episode as StalkerMappedEpisode;
+        const isLazyVod = mappedEpisode.custom_sid === 'vod-series';
+        const command = isLazyVod
+            ? `/media/file_${mappedEpisode.originalId ?? ''}.mpg`
+            : mappedEpisode.originalCmd;
+        const title = isLazyVod
+            ? `${item.info.name} - ${mappedEpisode.title || `Episode ${episodeState.episodeNumber}`}`
+            : item.info.name;
+
+        try {
+            const playback = await this.stalkerStore.resolveVodPlayback(
+                command,
+                title,
+                inline.thumbnail ?? item.info.movie_image,
+                episodeState.episodeNumber,
+                Number(episodeState.episode.id),
+                inline.startTime,
+                { preferTokenizedUrl: true }
+            );
+            await this.portalPlayer.openExternalPlayback(playback, 'mpv');
+        } catch (error) {
+            this.logger.error('Failed to open inline playback in MPV', error);
+            this.snackBar.open(
+                this.translateService.instant('PORTALS.PLAYBACK_ERROR'),
+                undefined,
+                { duration: 3000 }
+            );
+        }
+    };
 
     playPreviousEpisode(): void {
         const previous = this.inlineEpisodeState()?.previous;

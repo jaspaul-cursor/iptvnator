@@ -520,6 +520,40 @@ describe('withStalkerPlayer', () => {
             expect(playback.streamUrl).toBe('http://cdn.example/movie.mkv');
         });
 
+        it('mints a link for a cross-origin static VOD row when external playback cannot carry portal credentials', async () => {
+            isEmbeddedPlayer.mockReturnValue(false);
+            supportsManagedExternalPlayers = false;
+            store.setSelectedContentType('vod');
+            store.setSelectedItem({
+                id: '45',
+                cmd: 'ffrt3 http://cdn.example/movie.mkv',
+                title: 'CDN Movie',
+                category_id: 'vod',
+                use_http_tmp_link: '0',
+                use_load_balancing: '0',
+            });
+            dataService.sendIpcEvent.mockResolvedValueOnce({
+                js: { cmd: 'http://cdn.example/tmp/movie.mkv?tok=1' },
+            });
+
+            const playback = await store.resolveVodPlayback(
+                undefined,
+                'CDN Movie'
+            );
+
+            expect(dataService.sendIpcEvent).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({
+                    params: expect.objectContaining({
+                        action: StalkerPortalActions.CreateLink,
+                    }),
+                })
+            );
+            expect(playback.streamUrl).toBe(
+                'http://cdn.example/tmp/movie.mkv?tok=1'
+            );
+        });
+
         it('mints a link for a same-host static VOD row when external playback cannot carry portal credentials', async () => {
             isEmbeddedPlayer.mockReturnValue(false);
             supportsManagedExternalPlayers = false;

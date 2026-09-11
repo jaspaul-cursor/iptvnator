@@ -254,6 +254,13 @@ export class PortalInlinePlayerComponent {
     readonly previousEpisodeRequested = output<void>();
     readonly nextEpisodeRequested = output<void>();
     readonly upNextEpisodeSelected = output<UpNextRailItem>();
+    /**
+     * When set, "Open in MPV" runs this instead of forwarding the inline
+     * stream URL (hosts re-mint tokenized links for portal streams).
+     */
+    readonly openInMpvHandler = input<(() => Promise<void> | void) | null>(
+        null
+    );
 
     constructor() {
         effect((onCleanup) => {
@@ -306,8 +313,18 @@ export class PortalInlinePlayerComponent {
     }
 
     openInMpv(): void {
+        if (!this.showOpenInMpv()) {
+            return;
+        }
+
+        const handler = this.openInMpvHandler();
+        if (handler) {
+            void handler();
+            return;
+        }
+
         const url = this.streamUrl();
-        if (!this.showOpenInMpv() || !url) {
+        if (!url) {
             return;
         }
 

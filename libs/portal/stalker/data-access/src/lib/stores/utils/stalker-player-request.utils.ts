@@ -58,12 +58,18 @@ export async function fetchStalkerPlaybackLink(
          * `cmd` and never touch the portal.
          */
         linkFlags?: StalkerLinkFlagSource | null;
+        /**
+         * When true, never return a static `cmd` shortcut — every handoff
+         * that cannot carry portal cookies or Bearer tokens (PWA `mpv://`,
+         * download manager) must mint through `create_link`.
+         */
+        preferTokenizedUrl?: boolean;
     }
 ): Promise<string> {
     // An episode is selected server-side by the `series` parameter, so a
     // series request has no static answer even when the parent row is
     // unflagged — the static `cmd` addresses the series, not the episode.
-    if (options.series === undefined) {
+    if (options.series === undefined && !options.preferTokenizedUrl) {
         const staticUrl = resolveStalkerStaticPlaybackUrl(
             options.linkFlags,
             options.cmd

@@ -222,6 +222,7 @@
                 (externalFallbackRequested)="
                     handleExternalFallbackRequest($event)
                 "
+                [openInMpvHandler]="openInMpvFromInlinePlayback"
             />
         }
 
@@ -244,6 +245,7 @@
                 [downloadAdapter]="episodeDownloadAdapter()"
                 [isLoading]="
                     isVodSeriesSeasonsLoading() ||
+                    isSerialSeasonsLoading() ||
                     isCurrentSeasonLoading(seasonContainer?.selectedSeason())
                 "
                 [seasonWatchBatchRunning]="seasonWatchBatchRunning()"

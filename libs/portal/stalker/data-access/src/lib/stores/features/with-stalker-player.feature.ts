@@ -48,6 +48,11 @@ type StalkerPlayableItem = StalkerPortalItem &
         has_files?: unknown;
     };
 
+export interface StalkerVodPlaybackOptions {
+    /** Force `create_link` even for cross-origin static cmds (PWA MPV handoff). */
+    preferTokenizedUrl?: boolean;
+}
+
 /**
  * Playback/link/player concern methods.
  */
@@ -160,7 +165,8 @@ export function withStalkerPlayer() {
                     thumbnail?: string,
                     episodeNum?: number,
                     episodeId?: number,
-                    startTime?: number
+                    startTime?: number,
+                    options?: StalkerVodPlaybackOptions
                 ): Promise<ResolvedPortalPlayback> => {
                     const item = storeState.selectedItem() as
                         | StalkerPlayableItem
@@ -190,8 +196,9 @@ export function withStalkerPlayer() {
                     }
 
                     const preferTokenizedUrl =
-                        !playerService.isEmbeddedPlayer() &&
-                        !runtimeCapabilities.supportsManagedExternalPlayers;
+                        options?.preferTokenizedUrl === true ||
+                        (!playerService.isEmbeddedPlayer() &&
+                            !runtimeCapabilities.supportsManagedExternalPlayers);
                     const linkFlags = resolveStalkerPlaybackLinkFlags({
                         portalUrl: playlist.portalUrl,
                         cmd: cmdToUse,
@@ -208,6 +215,7 @@ export function withStalkerPlayer() {
                             cmd: cmdToUse,
                             series: episodeNum,
                             linkFlags,
+                            preferTokenizedUrl,
                         }
                     );
 
@@ -461,7 +469,8 @@ export function withStalkerPlayer() {
                         thumbnail?: string,
                         episodeNum?: number,
                         episodeId?: number,
-                        startTime?: number
+                        startTime?: number,
+                        options?: StalkerVodPlaybackOptions
                     ): Promise<ResolvedPortalPlayback> {
                         return resolveVodPlaybackInternal(
                             cmd,
@@ -469,7 +478,8 @@ export function withStalkerPlayer() {
                             thumbnail,
                             episodeNum,
                             episodeId,
-                            startTime
+                            startTime,
+                            options
                         );
                     },
                     async resolveItvPlayback(
