@@ -4,7 +4,11 @@ import { signalStoreFeature, withMethods } from '@ngrx/signals';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 import { PORTAL_PLAYER, createLogger } from '@iptvnator/portal/shared/util';
-import { DataService, PlaylistsService } from '@iptvnator/services';
+import {
+    DataService,
+    PlaylistsService,
+    RuntimeCapabilitiesService,
+} from '@iptvnator/services';
 import {
     PlaylistMeta,
     ResolvedPortalPlayback,
@@ -33,6 +37,7 @@ import {
     fetchStalkerMovieFileId,
     fetchStalkerPlaybackLink,
     hasStalkerLinkFlagEvidence,
+    resolveStalkerPlaybackLinkFlags,
     shouldResolveMovieFileId,
     type StalkerLinkFlagSource,
 } from '../utils';
@@ -56,6 +61,7 @@ export function withStalkerPlayer() {
                 dataService = inject(DataService),
                 playlistService = inject(PlaylistsService),
                 playerService = inject(PORTAL_PLAYER),
+                runtimeCapabilities = inject(RuntimeCapabilitiesService),
                 stalkerSession = inject(StalkerSessionService),
                 portalRepair = inject(StalkerPortalRepairService),
                 snackBar = inject(MatSnackBar),
@@ -183,6 +189,16 @@ export function withStalkerPlayer() {
                         }
                     }
 
+                    const preferTokenizedUrl =
+                        !playerService.isEmbeddedPlayer() &&
+                        !runtimeCapabilities.supportsManagedExternalPlayers;
+                    const linkFlags = resolveStalkerPlaybackLinkFlags({
+                        portalUrl: playlist.portalUrl,
+                        cmd: cmdToUse,
+                        linkFlags: item,
+                        preferTokenizedUrl,
+                    });
+
                     const streamUrl = await fetchStalkerPlaybackLink(
                         requestDeps,
                         {
@@ -191,7 +207,7 @@ export function withStalkerPlayer() {
                                 storeState.selectedContentType(),
                             cmd: cmdToUse,
                             series: episodeNum,
-                            linkFlags: item,
+                            linkFlags,
                         }
                     );
 

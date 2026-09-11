@@ -1,6 +1,7 @@
 import {
     isStalkerPortalFlagEnabled,
     requiresStalkerTemporaryLink,
+    resolveStalkerPlaybackLinkFlags,
     resolveStalkerStaticPlaybackUrl,
 } from './stalker-link-semantics.utils';
 
@@ -265,6 +266,46 @@ describe('stalker-link-semantics', () => {
                     'http://localhost.cdn.example/live/42.m3u8'
                 )
             ).toBe('http://localhost.cdn.example/live/42.m3u8');
+        });
+    });
+
+    describe('resolveStalkerPlaybackLinkFlags', () => {
+        const unflaggedRow = {
+            use_http_tmp_link: '0',
+            use_load_balancing: '0',
+        };
+
+        it('keeps link flags when tokenized URLs are not required', () => {
+            expect(
+                resolveStalkerPlaybackLinkFlags({
+                    portalUrl: 'https://portal.example/portal.php',
+                    cmd: 'ffrt3 https://portal.example/movie.mkv',
+                    linkFlags: unflaggedRow,
+                    preferTokenizedUrl: false,
+                })
+            ).toBe(unflaggedRow);
+        });
+
+        it('keeps link flags for a cross-origin static movie', () => {
+            expect(
+                resolveStalkerPlaybackLinkFlags({
+                    portalUrl: 'https://portal.example/portal.php',
+                    cmd: 'ffrt3 https://cdn.example/movie.mkv',
+                    linkFlags: unflaggedRow,
+                    preferTokenizedUrl: true,
+                })
+            ).toBe(unflaggedRow);
+        });
+
+        it('strips link flags for a same-host static movie when tokenized URLs are required', () => {
+            expect(
+                resolveStalkerPlaybackLinkFlags({
+                    portalUrl: 'https://portal.example/portal.php',
+                    cmd: 'ffrt3 https://portal.example/movie.mkv',
+                    linkFlags: unflaggedRow,
+                    preferTokenizedUrl: true,
+                })
+            ).toBeUndefined();
         });
     });
 });

@@ -10,10 +10,9 @@ type StalkerVodDetailsItem = Extract<VodDetailsItem, { type: 'stalker' }>;
 import {
     normalizeStalkerEntityId,
     normalizeStalkerEntityIdAsNumber,
-    resolveStalkerStaticPlaybackUrl,
+    resolveStalkerPlaybackLinkFlags,
     type StalkerLinkFlagSource,
 } from '@iptvnator/portal/stalker/data-access';
-import { isStalkerStreamCredentialSafe } from '@iptvnator/shared/interfaces';
 
 /**
  * Starting a download of a Stalker VOD item.
@@ -142,19 +141,18 @@ export async function startStalkerVodDownload(
     // credentials — i.e. one the shared classifier says is NOT portal-owned.
     // A same-host movie keeps going through `create_link`, whose minted URL
     // carries its own access token.
-    const staticCandidate = resolveStalkerStaticPlaybackUrl(
-        itemData,
-        cmdToUse
-    );
-    const staticUrlIsSelfAuthenticating =
-        staticCandidate !== null &&
-        !isStalkerStreamCredentialSafe(playlist.portalUrl, staticCandidate);
+    const linkFlags = resolveStalkerPlaybackLinkFlags({
+        portalUrl: playlist.portalUrl,
+        cmd: cmdToUse,
+        linkFlags: itemData,
+        preferTokenizedUrl: true,
+    });
 
     const url = await deps.fetchLinkToPlay(
         playlist.portalUrl,
         playlist.macAddress,
         cmdToUse,
-        staticUrlIsSelfAuthenticating ? itemData : undefined
+        linkFlags
     );
     if (!url) {
         return;

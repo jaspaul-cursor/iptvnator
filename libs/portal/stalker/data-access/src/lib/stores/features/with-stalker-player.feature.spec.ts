@@ -4,7 +4,11 @@ import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 import { PORTAL_PLAYER } from '@iptvnator/portal/shared/util';
-import { DataService, PlaylistsService } from '@iptvnator/services';
+import {
+    DataService,
+    PlaylistsService,
+    RuntimeCapabilitiesService,
+} from '@iptvnator/services';
 import { of } from 'rxjs';
 import {
     PlaylistMeta,
@@ -82,8 +86,12 @@ describe('withStalkerPlayer', () => {
     let ngrxStore: {
         dispatch: jest.Mock;
     };
+    let isEmbeddedPlayer: jest.Mock<boolean, []>;
+    let supportsManagedExternalPlayers: boolean;
 
     beforeEach(() => {
+        isEmbeddedPlayer = jest.fn(() => true);
+        supportsManagedExternalPlayers = true;
         dataService = {
             sendIpcEvent: jest.fn(),
         };
@@ -107,7 +115,16 @@ describe('withStalkerPlayer', () => {
                 {
                     provide: PORTAL_PLAYER,
                     useValue: {
+                        isEmbeddedPlayer,
                         openResolvedPlayback: jest.fn(),
+                    },
+                },
+                {
+                    provide: RuntimeCapabilitiesService,
+                    useValue: {
+                        get supportsManagedExternalPlayers() {
+                            return supportsManagedExternalPlayers;
+                        },
                     },
                 },
                 {
@@ -501,6 +518,40 @@ describe('withStalkerPlayer', () => {
 
             expect(dataService.sendIpcEvent).not.toHaveBeenCalled();
             expect(playback.streamUrl).toBe('http://cdn.example/movie.mkv');
+        });
+
+        it('mints a link for a same-host static VOD row when external playback cannot carry portal credentials', async () => {
+            isEmbeddedPlayer.mockReturnValue(false);
+            supportsManagedExternalPlayers = false;
+            store.setSelectedContentType('vod');
+            store.setSelectedItem({
+                id: '44',
+                cmd: 'ffrt3 http://demo.example/movies/44.mkv',
+                title: 'Portal Movie',
+                category_id: 'vod',
+                use_http_tmp_link: '0',
+                use_load_balancing: '0',
+            });
+            dataService.sendIpcEvent.mockResolvedValueOnce({
+                js: { cmd: 'http://cdn.example/tmp/44.mkv?tok=1' },
+            });
+
+            const playback = await store.resolveVodPlayback(
+                undefined,
+                'Portal Movie'
+            );
+
+            expect(dataService.sendIpcEvent).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({
+                    params: expect.objectContaining({
+                        action: StalkerPortalActions.CreateLink,
+                    }),
+                })
+            );
+            expect(playback.streamUrl).toBe(
+                'http://cdn.example/tmp/44.mkv?tok=1'
+            );
         });
 
         it.each([
