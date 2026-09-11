@@ -1,3 +1,4 @@
+import { isStalkerStreamCredentialSafe } from '@iptvnator/shared/interfaces';
 import {
     isPlayableHttpUrl,
     normalizeStalkerPlaybackCommand,
@@ -194,4 +195,44 @@ export function resolveStalkerStaticPlaybackUrl(
     }
 
     return url;
+}
+
+export interface ResolveStalkerPlaybackLinkFlagsOptions {
+    portalUrl: string | undefined;
+    cmd: string;
+    linkFlags: StalkerLinkFlagSource | null | undefined;
+    /**
+     * When true, a portal-owned static URL must not be offered — the handoff
+     * cannot carry mac cookies or Bearer tokens (PWA `mpv://`, downloads).
+     */
+    preferTokenizedUrl: boolean;
+}
+
+/**
+ * Chooses which link flags reach `fetchStalkerPlaybackLink`.
+ *
+ * Playback in Electron or the inline web player can attach portal credentials
+ * to a same-host static URL. External handoffs that cannot (PWA MPV, the
+ * download manager) strip the flags so the row is resolved through
+ * `create_link` instead.
+ */
+export function resolveStalkerPlaybackLinkFlags(
+    options: ResolveStalkerPlaybackLinkFlagsOptions
+): StalkerLinkFlagSource | null | undefined {
+    if (!options.preferTokenizedUrl) {
+        return options.linkFlags;
+    }
+
+    const staticCandidate = resolveStalkerStaticPlaybackUrl(
+        options.linkFlags,
+        options.cmd
+    );
+    if (
+        staticCandidate !== null &&
+        isStalkerStreamCredentialSafe(options.portalUrl, staticCandidate)
+    ) {
+        return undefined;
+    }
+
+    return options.linkFlags;
 }
