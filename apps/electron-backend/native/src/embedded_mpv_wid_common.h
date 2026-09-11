@@ -382,7 +382,7 @@ std::string joinHeaderFields(const Napi::Object& headers)
 
         // mpv's `--http-header-fields` option is a comma-separated list
         // (OPT_STRINGLIST). Header values that themselves contain commas
-        // (e.g. the Stalker MAG250 user agent "...(KHTML, like Gecko) MAG250")
+        // (e.g. the Stalker MAG254 user agent "...(KHTML, like Gecko) MAG254")
         // must be escaped so mpv does not split them into bogus fields and
         // the server rejects the request with HTTP 400. mpv strips the
         // backslash and keeps the comma inside the header value.

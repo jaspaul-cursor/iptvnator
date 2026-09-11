@@ -367,7 +367,7 @@ describe('request header override credentials', () => {
         );
 
         configureRequestHeaderOverride(
-            'MAG250',
+            'MAG254',
             'http://portal.example',
             STREAM_URL,
             CREDENTIALS
@@ -378,7 +378,7 @@ describe('request header override credentials', () => {
 
         expect(headers['Cookie']).toBe(CREDENTIALS.cookie);
         expect(headers['Authorization']).toBe(CREDENTIALS.authorization);
-        expect(headers['User-Agent']).toBe('MAG250');
+        expect(headers['User-Agent']).toBe('MAG254');
         expect(headers['Referer']).toBe('http://portal.example');
     });
 
@@ -390,7 +390,7 @@ describe('request header override credentials', () => {
         // The UA/Referer scope includes the referer origin (port 80), but
         // the credentials belong to the stream origin (:8080) only.
         configureRequestHeaderOverride(
-            'MAG250',
+            'MAG254',
             'http://portal.example',
             STREAM_URL,
             CREDENTIALS
@@ -402,7 +402,7 @@ describe('request header override credentials', () => {
             'http://portal.example/some/page'
         );
 
-        expect(headers['User-Agent']).toBe('MAG250');
+        expect(headers['User-Agent']).toBe('MAG254');
         expect(headers['Cookie']).toBeUndefined();
         expect(headers['Authorization']).toBeUndefined();
     });
@@ -413,7 +413,7 @@ describe('request header override credentials', () => {
         );
 
         configureRequestHeaderOverride(
-            'MAG250',
+            'MAG254',
             'http://portal.example',
             STREAM_URL,
             CREDENTIALS
@@ -455,7 +455,7 @@ describe('request header override credentials', () => {
         );
 
         configureRequestHeaderOverride(
-            'MAG250',
+            'MAG254',
             'http://portal.example',
             STREAM_URL,
             CREDENTIALS
@@ -479,7 +479,7 @@ describe('request header override credentials', () => {
         );
 
         configureRequestHeaderOverride(
-            'MAG250',
+            'MAG254',
             'http://portal.example',
             STREAM_URL,
             CREDENTIALS
@@ -520,7 +520,7 @@ describe('request header override credentials', () => {
         );
 
         configureRequestHeaderOverride(
-            'MAG250',
+            'MAG254',
             'http://portal.example',
             STREAM_URL,
             CREDENTIALS
@@ -543,7 +543,7 @@ describe('request header override credentials', () => {
             './request-header-overrides.service'
         );
 
-        configureRequestHeaderOverride('MAG250', undefined, STREAM_URL, {
+        configureRequestHeaderOverride('MAG254', undefined, STREAM_URL, {
             authorization: 'Bearer TOKEN\r\nX-Injected: 1',
             cookie: 'mac=00\r\nX-Injected: 1',
         });

@@ -1282,7 +1282,7 @@ describe('StalkerLiveStreamLayoutComponent', () => {
             streamUrl: 'http://portal.example/radio_2.mpg',
             title: 'Portal FM',
             headers: {
-                'User-Agent': 'MAG250',
+                'User-Agent': 'MAG254',
                 Referer: 'http://portal.example',
                 Cookie: 'mac=00:1A:79:00:00:01',
                 Authorization: 'Bearer TOKEN99',
@@ -1294,7 +1294,7 @@ describe('StalkerLiveStreamLayoutComponent', () => {
         fixture.detectChanges();
 
         expect(window.electron?.setUserAgent).toHaveBeenCalledWith(
-            'MAG250',
+            'MAG254',
             'http://portal.example',
             'http://portal.example/radio_2.mpg',
             {

@@ -266,7 +266,7 @@ export class StalkerAuthApi {
         // Build metrics JSON matching working app
         const metrics: Record<string, string> = {
             mac: macAddress,
-            model: 'MAG250',
+            model: 'MAG254',
             type: 'STB',
             random: handshakeRandom,
             ...(normalizedIdentity.serialNumber
@@ -280,7 +280,7 @@ export class StalkerAuthApi {
         const params: Record<string, string> = {
             type: 'stb',
             action: 'get_profile',
-            // One coherent MAG250: firmware, hardware revision, image version
+            // One coherent MAG254: firmware, hardware revision, image version
             // and `stb_type` (which used to go out empty), alongside the
             // `hd`/`video_out`/`num_banks` this request already carried.
             ...STALKER_STB_PROFILE_PARAMS,

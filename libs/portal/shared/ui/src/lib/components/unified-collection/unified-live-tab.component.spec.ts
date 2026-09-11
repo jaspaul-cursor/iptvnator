@@ -743,7 +743,7 @@ describe('UnifiedLiveTabComponent', () => {
                 title: 'Jazz Radio',
                 thumbnail: 'jazz.png',
                 headers: {
-                    'User-Agent': 'MAG250',
+                    'User-Agent': 'MAG254',
                     Referer: 'http://portal.example',
                     Cookie: 'mac=00:1A:79:00:00:01',
                     Authorization: 'Bearer TOKEN99',
@@ -798,7 +798,7 @@ describe('UnifiedLiveTabComponent', () => {
         expect(audioPlayer.channelName()).toBe('Jazz Radio');
 
         expect(setUserAgent).toHaveBeenCalledWith(
-            'MAG250',
+            'MAG254',
             'http://portal.example',
             'https://example.com/jazz.mp3',
             {

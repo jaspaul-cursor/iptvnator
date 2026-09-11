@@ -6,7 +6,7 @@ const GATED_PLAYBACK = {
     streamUrl: STREAM_URL,
     title: 'Gated Channel',
     headers: {
-        'User-Agent': 'MAG250',
+        'User-Agent': 'MAG254',
         Referer: 'http://portal.example',
         Cookie: 'mac=00%3A1A%3A79%3A00%3A00%3A01; stb_lang=en_US',
         Authorization: 'Bearer TOKEN123',
@@ -40,7 +40,7 @@ describe('ElectronStreamHeadersService', () => {
         await expect(service.apply(GATED_PLAYBACK)).resolves.toBe(true);
 
         expect(setUserAgent).toHaveBeenCalledWith(
-            'MAG250',
+            'MAG254',
             'http://portal.example',
             STREAM_URL,
             {
