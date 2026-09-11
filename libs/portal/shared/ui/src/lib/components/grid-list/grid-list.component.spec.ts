@@ -7,6 +7,7 @@ import { SettingsStore } from '@iptvnator/services';
 import {
     formatGridRating,
     GridListComponent,
+    resolveGridItemKey,
     resolveGridRating,
 } from './grid-list.component';
 
@@ -33,6 +34,24 @@ describe('grid list rating helpers', () => {
                 rating_imdb: '  ',
             })
         ).toBe('5.7');
+    });
+});
+
+describe('resolveGridItemKey', () => {
+    it('prefers stable provider ids over list position', () => {
+        expect(resolveGridItemKey({ id: 42, title: 'A' }, 0)).toBe('42');
+        expect(resolveGridItemKey({ stream_id: '99', title: 'B' }, 3)).toBe(
+            '99'
+        );
+    });
+
+    it('falls back to category, title, and index when no id is present', () => {
+        expect(
+            resolveGridItemKey(
+                { category_id: '7', title: 'Mystery Show' },
+                2
+            )
+        ).toBe('7:Mystery Show:2');
     });
 });
 

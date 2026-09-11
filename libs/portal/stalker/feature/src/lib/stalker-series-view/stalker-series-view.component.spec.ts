@@ -69,6 +69,9 @@ class StubPortalInlinePlayerComponent {
     readonly previousEpisodeRequested = output<void>();
     readonly nextEpisodeRequested = output<void>();
     readonly upNextEpisodeSelected = output<unknown>();
+    readonly openInMpvHandler = input<(() => Promise<void> | void) | null>(
+        null
+    );
 }
 
 @Component({
@@ -1236,6 +1239,45 @@ describe('StalkerSeriesViewComponent', () => {
         // Single-season slice whose provider season is renumbered to 1:
         // the title marker names the real TMDB season.
         expect(tmdbGetSeason).toHaveBeenCalledWith(777, 2);
+    });
+
+    it('hides stale regular-series episodes while serial seasons reload', async () => {
+        serialSeasonsResource.set([
+            {
+                id: 'season-1',
+                name: 'Season 1',
+                cmd: '/media/file_30001.mpg',
+                series: [1, 2],
+            },
+        ]);
+        selectedItem.set({
+            id: '30001',
+            cmd: '/media/file_30001.mpg',
+            info: {
+                name: 'Regular Series',
+                description: 'Series description',
+                movie_image: 'poster.jpg',
+            },
+        } as never);
+        await stabilize();
+
+        expect(Object.keys(fixture.componentInstance.mappedSeasons())).toEqual([
+            '1',
+        ]);
+
+        isSerialSeasonsLoading.set(true);
+        selectedItem.set({
+            id: '30002',
+            cmd: '/media/file_30002.mpg',
+            info: {
+                name: 'Other Series',
+                description: 'Other description',
+                movie_image: 'poster2.jpg',
+            },
+        } as never);
+        await stabilize();
+
+        expect(fixture.componentInstance.mappedSeasons()).toEqual({});
     });
 
     it('gates the fetch on the reloading season resource during detail-to-detail navigation', async () => {

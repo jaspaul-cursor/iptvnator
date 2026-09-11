@@ -511,6 +511,25 @@ describe('PortalInlinePlayerComponent', () => {
             });
         });
 
+        it('delegates to openInMpvHandler when the host supplies one', async () => {
+            await setupOpenInMpv(VideoPlayer.Html5Player);
+            const handler = jest.fn();
+            fixture.componentRef.setInput('openInMpvHandler', handler);
+            fixture.componentRef.setInput('playback', {
+                streamUrl: 'https://example.com/live.ts',
+                title: 'News',
+            });
+            fixture.detectChanges();
+
+            const button = fixture.nativeElement.querySelector(
+                '[data-test-id="inline-open-in-mpv"]'
+            ) as HTMLButtonElement;
+            button.click();
+
+            expect(handler).toHaveBeenCalled();
+            expect(sendIpcEvent).not.toHaveBeenCalled();
+        });
+
         it('hides the action when MPV is already the saved player', async () => {
             await setupOpenInMpv(VideoPlayer.MPV);
             fixture.componentRef.setInput('playback', {
