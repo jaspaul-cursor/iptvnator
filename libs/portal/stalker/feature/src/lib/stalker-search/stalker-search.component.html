@@ -28,6 +28,7 @@
             [externalPlayback]="externalPlayback.activeSession()"
             (playClicked)="onVodPlay($event)"
             (resumeClicked)="onVodResume($event)"
+            (downloadRequested)="onVodDownload($event)"
             (inlineTimeUpdated)="handleInlineTimeUpdate($event)"
             (inlinePlaybackClosed)="closeInlinePlayer()"
             (streamUrlCopied)="showCopyNotification()"

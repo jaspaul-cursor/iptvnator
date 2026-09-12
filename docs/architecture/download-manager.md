@@ -7,6 +7,11 @@ views. Backend work is handled in the Electron process while the Angular
 renderer exposes the global `/workspace/downloads` page, source-scoped route
 variants, contextual buttons, and theme-aware styling.
 
+The PWA does not use this manager. Xtream and Stalker movie details (and
+Xtream Movies catalog cards) queue an external HLS job instead
+(`pwa-vod-download.util.ts`); series, live, and M3U stay without a download
+action.
+
 ## Xtream archive downloads
 
 The desktop Xtream Live TV programme dialog offers **Download programme (TS)**

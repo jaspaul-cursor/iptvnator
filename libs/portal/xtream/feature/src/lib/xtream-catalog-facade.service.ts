@@ -1,12 +1,22 @@
 import { Provider, Injectable, computed, inject } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
     PortalCatalogFacade,
     PortalCatalogItemProgress,
     PortalCatalogPlaylistMeta,
     PortalCatalogSortMode,
     PORTAL_CATALOG_FACADE,
+    queuePwaVodDownloadJob,
+    toPwaVodDownloadTitle,
+    toPwaVodM3u8Url,
 } from '@iptvnator/portal/shared/util';
-import { XtreamStore } from '@iptvnator/portal/xtream/data-access';
+import {
+    XtreamStore,
+    XtreamUrlService,
+} from '@iptvnator/portal/xtream/data-access';
+import { XtreamVodDetails } from '@iptvnator/shared/interfaces';
+import { RuntimeCapabilitiesService } from '@iptvnator/services';
+import { TranslateService } from '@ngx-translate/core';
 
 const SORT_STORAGE_KEY = 'xtream-category-sort-mode';
 
@@ -30,6 +40,11 @@ export class XtreamCatalogFacadeService implements PortalCatalogFacade<
     unknown
 > {
     private readonly xtreamStore = inject(XtreamStore);
+    private readonly xtreamUrlService = inject(XtreamUrlService);
+    private readonly runtime = inject(RuntimeCapabilitiesService);
+    private readonly snackBar = inject(MatSnackBar);
+    private readonly translateService = inject(TranslateService);
+    private readonly pwaJobInFlight = new Set<number>();
     private loadedPositionsPlaylistId: string | null = null;
 
     readonly provider = 'xtream' as const;
@@ -180,6 +195,57 @@ export class XtreamCatalogFacadeService implements PortalCatalogFacade<
             progress: this.xtreamStore.getProgressPercent(itemId, 'vod'),
             isWatched: this.xtreamStore.isWatched(itemId, 'vod'),
         };
+    }
+
+    async queuePwaVodDownload(item: Record<string, unknown>): Promise<void> {
+        const playlist = this.xtreamStore.currentPlaylist();
+        if (
+            !this.runtime.isPwa ||
+            this.contentType() !== 'vod' ||
+            !playlist
+        ) {
+            return;
+        }
+
+        const streamId = Number(item['xtream_id'] ?? item['stream_id']);
+        if (
+            !Number.isSafeInteger(streamId) ||
+            streamId <= 0 ||
+            this.pwaJobInFlight.has(streamId)
+        ) {
+            return;
+        }
+
+        const name = String(item['name'] ?? item['title'] ?? '');
+        const vodItem = {
+            stream_id: streamId,
+            container_extension: 'm3u8',
+        } as XtreamVodDetails;
+        const url = toPwaVodM3u8Url(
+            this.xtreamUrlService.constructVodUrl(playlist, vodItem)
+        );
+        const title = toPwaVodDownloadTitle(name);
+        if (!url || !title) {
+            return;
+        }
+
+        this.pwaJobInFlight.add(streamId);
+        try {
+            await queuePwaVodDownloadJob({ url, title });
+            this.snackBar.open(
+                this.translateService.instant('DOWNLOADS.STATUS.QUEUED'),
+                undefined,
+                { duration: 2000 }
+            );
+        } catch {
+            this.snackBar.open(
+                this.translateService.instant('DOWNLOADS.ACTION_FAILED'),
+                undefined,
+                { duration: 2000 }
+            );
+        } finally {
+            this.pwaJobInFlight.delete(streamId);
+        }
     }
 }
 

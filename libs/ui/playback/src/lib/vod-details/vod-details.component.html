@@ -259,9 +259,18 @@
             </button>
         }
 
-        <!-- Download buttons (Electron only) -->
-        @if (isElectron() && !providerOnly()) {
-            @if (isDownloaded()) {
+        @if (!providerOnly()) {
+            @if (!isElectron()) {
+                <button
+                    type="button"
+                    class="download-btn"
+                    (click)="onDownload()"
+                    data-testid="vod-download-start"
+                >
+                    <mat-icon>download</mat-icon>
+                    {{ 'DOWNLOADS.DOWNLOAD' | translate }}
+                </button>
+            } @else if (isDownloaded()) {
                 @if (externalPrimaryButtonState() === 'idle') {
                     <button class="download-btn" (click)="onProviderAction()">
                         <mat-icon>play_arrow</mat-icon>

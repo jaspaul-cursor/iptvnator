@@ -1287,6 +1287,10 @@ engine` (restart required) or
 
 **Download Manager**:
 
+- PWA: Xtream and Stalker movie details (never series, live, or M3U) expose
+  Download next to Play, which POSTs the HLS `.m3u8` URL and an `.mp4` title
+  to `https://auto-downloader.2410241.xyz/jobs`. Xtream Movies catalog cards
+  (`/vod`) offer the same action. The desktop queue stays Electron-only.
 - Fresh Xtream movie and series-episode downloads propagate the playlist's
   User-Agent, Referer, and Origin, defaulting User-Agent to the same
   provider-compatible `XTREAM_CLIENT_USER_AGENT` used by API requests and

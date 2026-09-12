@@ -107,6 +107,8 @@ describe('VodDetailsComponent offline playback', () => {
     let closeSession: jest.Mock;
     let playClicked: jest.Mock;
     let resumeClicked: jest.Mock;
+    let downloadRequested: jest.Mock;
+    let downloadsAvailable: ReturnType<typeof signal<boolean>>;
 
     const matchingDownload = (
         xtreamId: number,
@@ -164,8 +166,10 @@ describe('VodDetailsComponent offline playback', () => {
         fixture.componentRef.setInput('providerOnly', providerOnly);
         playClicked = jest.fn();
         resumeClicked = jest.fn();
+        downloadRequested = jest.fn();
         fixture.componentInstance.playClicked.subscribe(playClicked);
         fixture.componentInstance.resumeClicked.subscribe(resumeClicked);
+        fixture.componentInstance.downloadRequested.subscribe(downloadRequested);
         await fixture.whenStable();
     };
 
@@ -211,6 +215,7 @@ describe('VodDetailsComponent offline playback', () => {
 
     beforeEach(async () => {
         downloads = signal<DownloadItem[]>([]);
+        downloadsAvailable = signal(true);
         playDownload = jest.fn().mockResolvedValue({ success: true });
         closeSession = jest.fn().mockResolvedValue(undefined);
 
@@ -221,7 +226,7 @@ describe('VodDetailsComponent offline playback', () => {
                     provide: DownloadsService,
                     useValue: {
                         downloads,
-                        isAvailable: signal(true),
+                        isAvailable: downloadsAvailable,
                         isDownloaded: jest.fn(
                             (
                                 xtreamId: number,
@@ -493,5 +498,19 @@ describe('VodDetailsComponent offline playback', () => {
         await fixture.whenStable();
         expect(playClicked).toHaveBeenCalledWith(STALKER_VOD);
         expect(playDownload).not.toHaveBeenCalled();
+    });
+
+    it('shows a labeled Download action in the PWA', async () => {
+        downloadsAvailable.set(false);
+        await render();
+        fixture.detectChanges();
+
+        const download = fixture.nativeElement.querySelector(
+            '[data-testid="vod-download-start"]'
+        ) as HTMLButtonElement | null;
+        expect(download).not.toBeNull();
+        expect(download?.classList.contains('download-btn')).toBe(true);
+        download?.click();
+        expect(downloadRequested).toHaveBeenCalledWith(STALKER_VOD);
     });
 });

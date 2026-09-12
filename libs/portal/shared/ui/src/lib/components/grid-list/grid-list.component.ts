@@ -156,6 +156,22 @@ function normalizeArtworkUrl(value: string | undefined): string | undefined {
                                     alt="logo"
                                 />
                             }
+                            @if (showDownloadAction()) {
+                                <button
+                                    type="button"
+                                    class="pwa-download-btn"
+                                    data-test-id="grid-pwa-vod-download"
+                                    (click)="onDownloadClick($event, item)"
+                                    [matTooltip]="
+                                        'DOWNLOADS.DOWNLOAD' | translate
+                                    "
+                                    [attr.aria-label]="
+                                        'DOWNLOADS.DOWNLOAD' | translate
+                                    "
+                                >
+                                    <mat-icon>download</mat-icon>
+                                </button>
+                            }
                             @if (i.progress && i.progress > 0) {
                                 <app-progress-capsule [progress]="i.progress" />
                             }
@@ -279,7 +295,9 @@ export class GridListComponent {
     /** True when the latest append failed; renders the retry tail. */
     readonly appendError = input<boolean>(false);
     readonly searchTerm = input<string>('');
+    readonly showDownloadAction = input(false);
     readonly itemClicked = output<GridListItem>();
+    readonly downloadClicked = output<GridListItem>();
     readonly retryLoadMore = output<void>();
 
     readonly variant = input<'poster' | 'logo'>('poster');
@@ -309,6 +327,11 @@ export class GridListComponent {
             : 'CHANNELS.CATCHUP_AVAILABLE';
     }
     protected readonly resolveGridItemKey = resolveGridItemKey;
+
+    protected onDownloadClick(event: Event, item: GridListItem): void {
+        event.stopPropagation();
+        this.downloadClicked.emit(item);
+    }
 
     protected readonly channelTitle = (item: GridListItem): string => {
         const raw = item.title ?? item.o_name ?? item.name ?? '';

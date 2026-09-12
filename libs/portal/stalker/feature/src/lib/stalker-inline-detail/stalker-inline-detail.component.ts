@@ -53,6 +53,7 @@ export class StalkerInlineDetailComponent {
         item: VodDetailsItem;
         isFavorite: boolean;
     }>();
+    readonly downloadRequested = output<VodDetailsItem>();
     readonly inlineTimeUpdated = output<{
         currentTime: number;
         duration: number;
@@ -76,6 +77,10 @@ export class StalkerInlineDetailComponent {
 
     onFavoriteToggled(event: { item: VodDetailsItem; isFavorite: boolean }) {
         this.favoriteToggled.emit(event);
+    }
+
+    onDownloadRequested(item: VodDetailsItem) {
+        this.downloadRequested.emit(item);
     }
 
     onInlineTimeUpdated(event: { currentTime: number; duration: number }) {

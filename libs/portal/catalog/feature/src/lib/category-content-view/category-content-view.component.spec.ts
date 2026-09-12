@@ -30,7 +30,9 @@ class MockGridListComponent {
     readonly items = input<unknown[]>();
     readonly searchTerm = input<string>('');
     readonly type = input<string>('');
+    readonly showDownloadAction = input(false);
     readonly itemClicked = output<unknown>();
+    readonly downloadClicked = output<unknown>();
     readonly retryLoadMore = output<void>();
 }
 
@@ -95,6 +97,7 @@ describe('CategoryContentViewComponent', () => {
         selectItem: jest.fn().mockReturnValue(null),
         refreshSnapshotSelection: jest.fn(),
         getItemProgress: jest.fn().mockReturnValue({}),
+        queuePwaVodDownload: undefined as jest.Mock | undefined,
     };
 
     beforeEach(async () => {
@@ -121,6 +124,7 @@ describe('CategoryContentViewComponent', () => {
         catalog.selectItem.mockClear();
         catalog.selectItem.mockReturnValue(null);
         catalog.refreshSnapshotSelection.mockClear();
+        catalog.queuePwaVodDownload = undefined;
         router = {
             navigate: jest.fn(),
         };
@@ -600,6 +604,25 @@ describe('CategoryContentViewComponent', () => {
             infiniteFixture.detectChanges();
 
             expect(scrollTo).toHaveBeenCalledWith({ top: 0 });
+        });
+
+        it('enables the movies-grid download overlay when the facade can queue a PWA job', () => {
+            const infiniteFixture = createInfiniteFixture();
+            catalog.queuePwaVodDownload = jest.fn();
+            infiniteFixture.detectChanges();
+
+            expect(
+                infiniteFixture.componentInstance.showPwaVodDownload()
+            ).toBe(true);
+
+            infiniteFixture.componentInstance.onDownloadClick({
+                xtream_id: 42,
+                title: 'Catalog movie',
+            });
+            expect(catalog.queuePwaVodDownload).toHaveBeenCalledWith({
+                xtream_id: 42,
+                title: 'Catalog movie',
+            });
         });
     });
 });

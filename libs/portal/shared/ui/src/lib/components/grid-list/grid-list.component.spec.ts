@@ -256,6 +256,45 @@ describe('GridListComponent', () => {
         ).toBeNull();
     });
 
+    it('hides the download overlay unless the host asks for it', () => {
+        fixture.componentRef.setInput('items', [{ title: 'Catalog movie' }]);
+        fixture.componentRef.setInput('type', 'vod');
+        fixture.detectChanges();
+
+        expect(
+            fixture.debugElement.query(
+                By.css('[data-test-id="grid-pwa-vod-download"]')
+            )
+        ).toBeNull();
+    });
+
+    it('emits downloadClicked without opening the card', () => {
+        fixture.componentRef.setInput('items', [
+            { xtream_id: 42, title: 'Catalog movie' },
+        ]);
+        fixture.componentRef.setInput('type', 'vod');
+        fixture.componentRef.setInput('showDownloadAction', true);
+        fixture.detectChanges();
+
+        const itemClicks: unknown[] = [];
+        const downloadClicks: unknown[] = [];
+        fixture.componentInstance.itemClicked.subscribe((item) =>
+            itemClicks.push(item)
+        );
+        fixture.componentInstance.downloadClicked.subscribe((item) =>
+            downloadClicks.push(item)
+        );
+
+        fixture.debugElement
+            .query(By.css('[data-test-id="grid-pwa-vod-download"]'))
+            .nativeElement.click();
+
+        expect(downloadClicks).toEqual([
+            { xtream_id: 42, title: 'Catalog movie' },
+        ]);
+        expect(itemClicks).toEqual([]);
+    });
+
     it('renders raw titles while prefix stripping is disabled', () => {
         fixture.componentRef.setInput('items', [{ name: 'US | CNN' }]);
         fixture.componentRef.setInput('type', 'live');

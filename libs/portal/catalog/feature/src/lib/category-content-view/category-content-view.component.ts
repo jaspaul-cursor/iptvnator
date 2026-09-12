@@ -38,6 +38,7 @@ import {
     PROVIDER_ONLY_DETAIL_PRESENTATION_STATE_KEY,
     PortalCatalogSortMode,
 } from '@iptvnator/portal/shared/util';
+import { RuntimeCapabilitiesService } from '@iptvnator/services';
 
 interface CategoryContentItem {
     id?: number | string;
@@ -72,6 +73,7 @@ export class CategoryContentViewComponent implements OnInit, OnDestroy {
     private readonly destroyRef = inject(DestroyRef);
     private readonly hostElement = inject(ElementRef<HTMLElement>);
     private readonly router = inject(Router);
+    private readonly runtime = inject(RuntimeCapabilitiesService);
     private readonly translate = inject(TranslateService);
     private readonly providerOnlyStalkerItemId = signal<string | null>(null);
     private readonly catalog = inject(
@@ -173,6 +175,12 @@ export class CategoryContentViewComponent implements OnInit, OnDestroy {
             ...item,
             ...this.catalog.getItemProgress(item),
         }))
+    );
+    readonly showPwaVodDownload = computed(
+        () =>
+            this.runtime.isPwa &&
+            this.contentType() === 'vod' &&
+            typeof this.catalog.queuePwaVodDownload === 'function'
     );
     /**
      * Identity of the rendered list. A change means the grid shows a
@@ -289,6 +297,10 @@ export class CategoryContentViewComponent implements OnInit, OnDestroy {
 
     onRetryAppend(): void {
         this.catalog.retryAppend();
+    }
+
+    onDownloadClick(item: CategoryContentItem): void {
+        void this.catalog.queuePwaVodDownload?.(item);
     }
 
     onItemClick(item: CategoryContentItem): void {

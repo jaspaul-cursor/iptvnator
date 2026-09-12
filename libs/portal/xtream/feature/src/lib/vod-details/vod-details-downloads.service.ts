@@ -1,6 +1,12 @@
 import { Injectable, Signal, computed, inject, signal } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { XtreamStore } from '@iptvnator/portal/xtream/data-access';
-import { createMovieDownloadSnapshot } from '@iptvnator/portal/shared/util';
+import {
+    createMovieDownloadSnapshot,
+    queuePwaVodDownloadJob,
+    toPwaVodDownloadTitle,
+    toPwaVodM3u8Url,
+} from '@iptvnator/portal/shared/util';
 import { DownloadsService } from '@iptvnator/services';
 import { resolveXtreamVodPlaybackSource } from '@iptvnator/portal/xtream/data-access';
 import {
@@ -54,6 +60,8 @@ export class VodDetailsDownloadsService {
     private readonly downloadsService = inject(DownloadsService);
     private readonly xtreamStore = inject(XtreamStore);
     private readonly translateService = inject(TranslateService);
+    private readonly snackBar = inject(MatSnackBar);
+    private pwaJobInFlight = false;
 
     private routeContentId: Signal<number> = signal(NaN);
 
@@ -175,6 +183,11 @@ export class VodDetailsDownloadsService {
             return;
         }
 
+        if (!this.downloadsService.isAvailable()) {
+            await this.queuePwaJob(vodItem);
+            return;
+        }
+
         const presentation = resolveXtreamVodPlaybackPresentation(vodItem);
         const info = getXtreamVodInfo(vodItem);
         const routeVodId = this.routeContentId();
@@ -234,6 +247,41 @@ export class VodDetailsDownloadsService {
                 origin: playlist.origin,
             },
         });
+    }
+
+    /** PWA-only: queue the movie HLS URL; never series or live. */
+    private async queuePwaJob(vodItem: XtreamVodDetails): Promise<void> {
+        if (this.pwaJobInFlight) {
+            return;
+        }
+
+        const url = toPwaVodM3u8Url(
+            this.xtreamStore.constructVodStreamUrl(vodItem)
+        );
+        const title = toPwaVodDownloadTitle(
+            resolveXtreamVodPlaybackPresentation(vodItem).title
+        );
+        if (!url || !title) {
+            return;
+        }
+
+        this.pwaJobInFlight = true;
+        try {
+            await queuePwaVodDownloadJob({ url, title });
+            this.snackBar.open(
+                this.translateService.instant('DOWNLOADS.STATUS.QUEUED'),
+                undefined,
+                { duration: 2000 }
+            );
+        } catch {
+            this.snackBar.open(
+                this.translateService.instant('DOWNLOADS.ACTION_FAILED'),
+                undefined,
+                { duration: 2000 }
+            );
+        } finally {
+            this.pwaJobInFlight = false;
+        }
     }
 
     async playLocal(): Promise<void> {

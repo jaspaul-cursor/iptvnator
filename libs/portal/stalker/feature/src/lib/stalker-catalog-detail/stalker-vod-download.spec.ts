@@ -1,5 +1,10 @@
 import type { VodDetailsItem } from '@iptvnator/shared/interfaces';
-import { startStalkerVodDownload } from './stalker-vod-download';
+import { PWA_VOD_DOWNLOAD_JOBS_URL } from '@iptvnator/portal/shared/util';
+import {
+    queueStalkerMovieDownload,
+    startStalkerVodDownload,
+    toStalkerVodDownloadPlaylist,
+} from './stalker-vod-download';
 
 describe('startStalkerVodDownload', () => {
     it('captures the rendered Stalker movie metadata without changing provider identity', async () => {
@@ -221,5 +226,128 @@ describe('startStalkerVodDownload', () => {
                 url: 'https://stalker.example.test/tmp/42?tok=1',
             })
         );
+    });
+
+    it('queues a PWA movie download job instead of the desktop manager', async () => {
+        const fetchMock = jest
+            .fn()
+            .mockResolvedValue({ ok: true, status: 200 });
+        const originalFetch = globalThis.fetch;
+        globalThis.fetch = fetchMock as typeof fetch;
+        const startDownload = jest.fn();
+
+        try {
+            const queued = await startStalkerVodDownload(
+                {
+                    type: 'stalker',
+                    playlistId: 'stalker-1',
+                    cmd: '/media/file_42.mpg',
+                    data: {
+                        id: '42',
+                        info: { name: 'Catalog Movie' },
+                    },
+                } as unknown as VodDetailsItem,
+                {
+                    playlist: {
+                        id: 'stalker-1',
+                        portalUrl: 'https://stalker.example.test',
+                        macAddress: '00:1A:79:12:34:56',
+                    },
+                    downloadsService: {
+                        startDownload,
+                        isAvailable: () => false,
+                    },
+                    fetchMovieFileId: jest.fn(),
+                    fetchLinkToPlay: jest
+                        .fn()
+                        .mockResolvedValue(
+                            'https://cdn.example.test/movie.mpg'
+                        ),
+                }
+            );
+            expect(queued).toBe(true);
+        } finally {
+            globalThis.fetch = originalFetch;
+        }
+
+        expect(startDownload).not.toHaveBeenCalled();
+        expect(fetchMock).toHaveBeenCalledWith(
+            PWA_VOD_DOWNLOAD_JOBS_URL,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    url: 'https://cdn.example.test/movie.m3u8',
+                    title: 'Catalog Movie.mp4',
+                }),
+            }
+        );
+    });
+
+    it('maps a store playlist _id and referrer onto the download row', () => {
+        expect(
+            toStalkerVodDownloadPlaylist({
+                _id: 'stalker-1',
+                title: 'Living Room Portal',
+                portalUrl: 'https://stalker.example.test',
+                macAddress: '00:1A:79:12:34:56',
+                referrer: 'https://stalker.example.test',
+            })
+        ).toEqual({
+            id: 'stalker-1',
+            title: 'Living Room Portal',
+            portalUrl: 'https://stalker.example.test',
+            macAddress: '00:1A:79:12:34:56',
+            userAgent: undefined,
+            referer: 'https://stalker.example.test',
+            origin: undefined,
+        });
+    });
+
+    it('notifies when a PWA movie download job is queued', async () => {
+        const fetchMock = jest
+            .fn()
+            .mockResolvedValue({ ok: true, status: 200 });
+        const originalFetch = globalThis.fetch;
+        globalThis.fetch = fetchMock as typeof fetch;
+        const open = jest.fn();
+        const instant = jest.fn((key: string) => key);
+
+        try {
+            await queueStalkerMovieDownload(
+                {
+                    type: 'stalker',
+                    playlistId: 'stalker-1',
+                    cmd: '/media/file_42.mpg',
+                    data: {
+                        id: '42',
+                        info: { name: 'Catalog Movie' },
+                    },
+                } as unknown as VodDetailsItem,
+                {
+                    playlist: {
+                        id: 'stalker-1',
+                        portalUrl: 'https://stalker.example.test',
+                        macAddress: '00:1A:79:12:34:56',
+                    },
+                    downloadsService: {
+                        startDownload: jest.fn(),
+                        isAvailable: () => false,
+                    },
+                    fetchMovieFileId: jest.fn(),
+                    fetchLinkToPlay: jest
+                        .fn()
+                        .mockResolvedValue(
+                            'https://cdn.example.test/movie.mpg'
+                        ),
+                },
+                { open, instant }
+            );
+        } finally {
+            globalThis.fetch = originalFetch;
+        }
+
+        expect(instant).toHaveBeenCalledWith('DOWNLOADS.STATUS.QUEUED');
+        expect(open).toHaveBeenCalledWith('DOWNLOADS.STATUS.QUEUED');
     });
 });

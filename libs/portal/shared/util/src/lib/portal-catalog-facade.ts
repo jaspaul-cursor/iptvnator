@@ -83,6 +83,11 @@ export interface PortalCatalogFacade<
      */
     refreshSnapshotSelection?(): void;
     getItemProgress(item: TItem): PortalCatalogItemProgress;
+    /**
+     * PWA Xtream movies only: queue an external HLS download job.
+     * Series, live, and Stalker leave this undefined. Electron no-ops.
+     */
+    queuePwaVodDownload?(item: TItem): Promise<void>;
 }
 
 export interface StalkerPortalCatalogFacade<

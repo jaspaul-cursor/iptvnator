@@ -9,6 +9,7 @@ import {
     PORTAL_EXTERNAL_PLAYBACK,
     PORTAL_PLAYBACK_POSITIONS,
     PORTAL_PLAYER,
+    PWA_VOD_DOWNLOAD_JOBS_URL,
 } from '@iptvnator/portal/shared/util';
 import { XtreamStore } from '@iptvnator/portal/xtream/data-access';
 import {
@@ -394,6 +395,42 @@ describe('VodDetailsRouteComponent fallback actions', () => {
         expect(
             host.querySelector('app-portal-detail-shell')?.classList
         ).toContain('shell-host--watch');
+    });
+    it('queues a PWA movie download job instead of the desktop manager', async () => {
+        const item = sparseItem();
+        selectedItem.set(item);
+        constructVodStreamUrl.mockReturnValue(
+            'http://example.com/movie/650020.mkv'
+        );
+        const fetchMock = jest
+            .fn()
+            .mockResolvedValue({ ok: true, status: 200 });
+        const originalFetch = globalThis.fetch;
+        globalThis.fetch = fetchMock as typeof fetch;
+
+        try {
+            fixture.detectChanges();
+            const host = fixture.nativeElement as HTMLElement;
+            host.querySelector<HTMLButtonElement>(
+                '[data-testid="vod-download-start"]'
+            )?.click();
+            await fixture.whenStable();
+        } finally {
+            globalThis.fetch = originalFetch;
+        }
+
+        expect(startDownload).not.toHaveBeenCalled();
+        expect(fetchMock).toHaveBeenCalledWith(PWA_VOD_DOWNLOAD_JOBS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                url: 'http://example.com/movie/650020.m3u8',
+                title: 'Catalog movie.mp4',
+            }),
+        });
+        constructVodStreamUrl.mockReturnValue(
+            'http://example.com/movie/650020.mp4'
+        );
     });
     it('reuses the sparse item for resume, favorite, and download', async () => {
         const item = sparseItem();

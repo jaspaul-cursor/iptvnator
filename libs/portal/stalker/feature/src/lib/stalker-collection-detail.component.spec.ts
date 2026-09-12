@@ -15,7 +15,7 @@ import {
     UnifiedCollectionItem,
 } from '@iptvnator/portal/shared/util';
 import { StalkerStore } from '@iptvnator/portal/stalker/data-access';
-import { PlaylistsService } from '@iptvnator/services';
+import { DownloadsService, PlaylistsService } from '@iptvnator/services';
 import {
     Playlist,
     ResolvedPortalPlayback,
@@ -55,6 +55,7 @@ class StubStalkerInlineDetailComponent {
     readonly playClicked = output<VodDetailsItem>();
     readonly resumeClicked = output<unknown>();
     readonly favoriteToggled = output<unknown>();
+    readonly downloadRequested = output<unknown>();
     readonly inlineTimeUpdated = output<unknown>();
     readonly inlinePlaybackClosed = output<void>();
     readonly streamUrlCopied = output<void>();
@@ -212,6 +213,7 @@ describe('StalkerCollectionDetailComponent', () => {
                         getPortalFavorites: jest.fn(() => of([])),
                     },
                 },
+                { provide: DownloadsService, useValue: {} },
             ],
         })
             .overrideComponent(StalkerCollectionDetailComponent, {

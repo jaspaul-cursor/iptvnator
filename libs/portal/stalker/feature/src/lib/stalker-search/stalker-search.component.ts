@@ -24,6 +24,7 @@ import {
 } from '@iptvnator/portal/stalker/data-access';
 import {
     DataService,
+    DownloadsService,
     PlaylistsService,
     resetHostConnectivityGuard,
 } from '@iptvnator/services';
@@ -65,6 +66,7 @@ import {
     toggleStalkerVodFavorite,
 } from '@iptvnator/portal/stalker/data-access';
 import { StalkerVodPlaybackController } from '../stalker-vod-playback-controller';
+import { queueStalkerMovieDownloadFromStore } from '../stalker-catalog-detail/stalker-vod-download';
 import { createPlaybackSessionKey } from '@iptvnator/playback/util';
 
 interface StalkerFilter {
@@ -122,6 +124,7 @@ export class StalkerSearchComponent {
     private readonly dataService = inject(DataService);
     private readonly playlistContext = inject(PlaylistContextFacade);
     private readonly playlistService = inject(PlaylistsService);
+    private readonly downloadsService = inject(DownloadsService);
     readonly externalPlayback = inject(PORTAL_EXTERNAL_PLAYBACK);
     private readonly playbackPositions = inject(PORTAL_PLAYBACK_POSITIONS);
     private readonly portalPlayer = inject(PORTAL_PLAYER);
@@ -588,6 +591,18 @@ export class StalkerSearchComponent {
                 event.positionSeconds
             );
         }
+    }
+
+    onVodDownload(item: VodDetailsItem): void {
+        void queueStalkerMovieDownloadFromStore(
+            item,
+            this.stalkerStore,
+            this.downloadsService,
+            {
+                snackBar: this.snackBar,
+                translate: this.translateService,
+            }
+        );
     }
 
     onVodFavoriteToggled(event: {

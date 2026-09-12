@@ -325,7 +325,9 @@ describe('VodDetailsRouteComponent — playback actions', () => {
 
     it('guards Restart and provider actions before external IPC settles', async () => {
         currentPlaylist.set({ id: 'playlist-1' });
-        stubs.openResolvedPlayback.mockReturnValue(new Promise(() => undefined));
+        stubs.openResolvedPlayback.mockReturnValue(
+            new Promise(() => undefined)
+        );
         const component = fixture.componentInstance;
         const item = {
             movie_data: {
@@ -541,6 +543,7 @@ describe('VodDetailsRouteComponent — playback actions', () => {
 
     it('downloads the route movie with the metadata precedence rendered on screen', async () => {
         currentPlaylist.set({ id: 'playlist-1' });
+        downloadsAvailable.set(true);
         fixture.detectChanges();
 
         await fixture.componentInstance.downloadVod({

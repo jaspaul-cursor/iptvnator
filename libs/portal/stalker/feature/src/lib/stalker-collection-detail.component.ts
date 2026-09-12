@@ -36,10 +36,11 @@ import {
     StalkerStore,
 } from '@iptvnator/portal/stalker/data-access';
 import type { PlaybackFallbackRequest } from '@iptvnator/ui/playback';
-import { PlaylistsService } from '@iptvnator/services';
+import { DownloadsService, PlaylistsService } from '@iptvnator/services';
 import { Playlist, VodDetailsItem } from '@iptvnator/shared/interfaces';
 import { firstValueFrom } from 'rxjs';
 import { StalkerInlineDetailComponent } from './stalker-inline-detail/stalker-inline-detail.component';
+import { queueStalkerMovieDownloadFromStore } from './stalker-catalog-detail/stalker-vod-download';
 import {
     resolveStalkerCollectionDetailMode,
     resolveStalkerCollectionItem,
@@ -72,6 +73,7 @@ import {
                 (playClicked)="onVodPlay($event)"
                 (resumeClicked)="onVodResume($event)"
                 (favoriteToggled)="onVodFavoriteToggled($event)"
+                (downloadRequested)="onVodDownload($event)"
                 (inlineTimeUpdated)="handleInlineTimeUpdate($event)"
                 (inlinePlaybackClosed)="closeInlinePlayer()"
                 (streamUrlCopied)="showCopyNotification()"
@@ -109,6 +111,7 @@ export class StalkerCollectionDetailComponent implements ViewInPortalHandoff {
     readonly closeRequested = output<void>();
 
     private readonly playlistsService = inject(PlaylistsService);
+    private readonly downloadsService = inject(DownloadsService);
     private readonly router = inject(Router);
     private readonly stalkerStore = inject(StalkerStore);
     readonly externalPlayback = inject(PORTAL_EXTERNAL_PLAYBACK);
@@ -256,6 +259,18 @@ export class StalkerCollectionDetailComponent implements ViewInPortalHandoff {
         isFavorite: boolean;
     }): void {
         this.favorites.toggle(event);
+    }
+
+    onVodDownload(item: VodDetailsItem): void {
+        void queueStalkerMovieDownloadFromStore(
+            item,
+            this.stalkerStore,
+            this.downloadsService,
+            {
+                snackBar: this.snackBar,
+                translate: this.translateService,
+            }
+        );
     }
 
     handleInlineTimeUpdate(event: {

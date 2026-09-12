@@ -18,6 +18,7 @@ class StubVodDetailsComponent {
     readonly playClicked = output<unknown>();
     readonly resumeClicked = output<unknown>();
     readonly favoriteToggled = output<unknown>();
+    readonly downloadRequested = output<unknown>();
     readonly backClicked = output<void>();
     readonly inlineTimeUpdated = output<unknown>();
     readonly inlinePlaybackClosed = output<void>();

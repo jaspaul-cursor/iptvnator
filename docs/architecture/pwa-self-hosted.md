@@ -129,9 +129,13 @@ these limitations explicit in UI, troubleshooting, and release notes:
   link. Playback headers (Referer/Origin) cannot travel on that path, and iOS
   has no launch URL. Radio stays on the inline audio player; DASH/ClearKey
   stays inline because the keys are not transferable. VLC, IINA, Embedded MPV,
-  download manager flows, and Electron remote-control remain unavailable. If
-  MPV is not installed or the browser drops the custom-scheme gesture after an
-  async resolve, copy the stream URL and open it manually.
+  the desktop download manager, and Electron remote-control remain unavailable.
+  If MPV is not installed or the browser drops the custom-scheme gesture after
+  an async resolve, copy the stream URL and open it manually.
+- Xtream and Stalker movie details (never series, live, or M3U) expose
+  Download next to Play, which POSTs the HLS `.m3u8` URL and an `.mp4` title
+  to `https://auto-downloader.2410241.xyz/jobs`. Xtream Movies catalog cards
+  (`/vod`) offer the same action.
 
 Provider URLs are registered before proxy calls so the proxy endpoints do not
 accept raw target URLs in query strings. Registration validates the target URL

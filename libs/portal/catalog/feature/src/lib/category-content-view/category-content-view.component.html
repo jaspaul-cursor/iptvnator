@@ -218,6 +218,8 @@
                 (retryLoadMore)="onRetryAppend()"
                 [items]="contentWithProgress()"
                 (itemClicked)="onItemClick($event)"
+                [showDownloadAction]="showPwaVodDownload()"
+                (downloadClicked)="onDownloadClick($event)"
                 [searchTerm]="searchTerm()"
                 [type]="contentType() ?? ''"
             />

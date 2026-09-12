@@ -48,7 +48,7 @@ import {
 import { StalkerCatalogFacadeService } from '../stalker-catalog-facade.service';
 import { StalkerSeriesViewComponent } from '../stalker-series-view/stalker-series-view.component';
 
-import { startStalkerVodDownload } from './stalker-vod-download';
+import { queueStalkerMovieDownload } from './stalker-vod-download';
 import { createPlaybackSessionKey } from '@iptvnator/playback/util';
 
 @Component({
@@ -290,23 +290,31 @@ export class StalkerCatalogDetailComponent implements OnDestroy {
     }
 
     async onVodDownload(item: VodDetailsItem): Promise<void> {
-        await startStalkerVodDownload(item, {
-            playlist: this.catalog.playlist(),
-            downloadsService: this.downloadsService,
-            fetchMovieFileId: (id) => this.catalog.fetchMovieFileId(id),
-            fetchLinkToPlay: (portalUrl, macAddress, cmd, linkFlags) =>
-                this.catalog.fetchLinkToPlay(
-                    portalUrl,
-                    macAddress,
-                    cmd,
-                    undefined,
-                    linkFlags
-                ),
-            language:
-                this.translateService.currentLang ||
-                this.translateService.defaultLang ||
-                'en',
-        });
+        await queueStalkerMovieDownload(
+            item,
+            {
+                playlist: this.catalog.playlist(),
+                downloadsService: this.downloadsService,
+                fetchMovieFileId: (id) => this.catalog.fetchMovieFileId(id),
+                fetchLinkToPlay: (portalUrl, macAddress, cmd, linkFlags) =>
+                    this.catalog.fetchLinkToPlay(
+                        portalUrl,
+                        macAddress,
+                        cmd,
+                        undefined,
+                        linkFlags
+                    ),
+                language:
+                    this.translateService.currentLang ||
+                    this.translateService.defaultLang ||
+                    'en',
+            },
+            {
+                open: (message) =>
+                    this.snackBar.open(message, undefined, { duration: 2000 }),
+                instant: (key) => this.translateService.instant(key),
+            }
+        );
     }
 
     ngOnDestroy(): void {

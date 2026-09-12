@@ -258,8 +258,12 @@ describe('VodDetailsRouteComponent', () => {
                 ?.textContent
         ).toContain('XTREAM.DETAIL_FALLBACK.STATUS');
         expect(host.querySelector('button.play-btn')).not.toBeNull();
-        expect(host.querySelector('[data-testid="vod-favorite-toggle"]')).not.toBeNull();
-        expect(host.querySelector('[data-testid="vod-download-start"]')).toBeNull();
+        expect(
+            host.querySelector('[data-testid="vod-favorite-toggle"]')
+        ).not.toBeNull();
+        expect(
+            host.querySelector('[data-testid="vod-download-start"]')
+        ).not.toBeNull();
     });
 
     it('keeps the fallback visible for a minimal info object', () => {
@@ -299,7 +303,9 @@ describe('VodDetailsRouteComponent', () => {
 
         const host = fixture.nativeElement as HTMLElement;
         expect(host.querySelector('button.play-btn')).toBeNull();
-        expect(host.querySelector('[data-testid="vod-favorite-toggle"]')).toBeNull();
+        expect(
+            host.querySelector('[data-testid="vod-favorite-toggle"]')
+        ).toBeNull();
 
         selectedItem.set({
             info: [],
@@ -309,7 +315,9 @@ describe('VodDetailsRouteComponent', () => {
         fixture.detectChanges();
 
         expect(host.querySelector('button.play-btn')).not.toBeNull();
-        expect(host.querySelector('[data-testid="vod-favorite-toggle"]')).not.toBeNull();
+        expect(
+            host.querySelector('[data-testid="vod-favorite-toggle"]')
+        ).not.toBeNull();
     });
 
     it('keeps the full Xtream detail view when usable metadata exists', () => {

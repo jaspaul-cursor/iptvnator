@@ -1,5 +1,16 @@
 import type { DownloadsService } from '@iptvnator/services';
-import { createMovieDownloadSnapshot } from '@iptvnator/portal/shared/util';
+import {
+    createMovieDownloadSnapshot,
+    queuePwaVodDownloadJob,
+    toPwaVodDownloadTitle,
+    toPwaVodM3u8Url,
+} from '@iptvnator/portal/shared/util';
+import {
+    normalizeStalkerEntityId,
+    normalizeStalkerEntityIdAsNumber,
+    resolveStalkerPlaybackLinkFlags,
+    type StalkerLinkFlagSource,
+} from '@iptvnator/portal/stalker/data-access';
 import type {
     TmdbEnrichedCastMember,
     VodDetailsItem,
@@ -7,12 +18,6 @@ import type {
 
 /** The Stalker branch of the item union — the only one carrying `cmd`. */
 type StalkerVodDetailsItem = Extract<VodDetailsItem, { type: 'stalker' }>;
-import {
-    normalizeStalkerEntityId,
-    normalizeStalkerEntityIdAsNumber,
-    resolveStalkerPlaybackLinkFlags,
-    type StalkerLinkFlagSource,
-} from '@iptvnator/portal/stalker/data-access';
 
 /**
  * Starting a download of a Stalker VOD item.
@@ -61,7 +66,9 @@ export interface StalkerVodDownloadPlaylist {
 
 export interface StalkerVodDownloadDeps {
     playlist: StalkerVodDownloadPlaylist | null | undefined;
-    downloadsService: Pick<DownloadsService, 'startDownload'>;
+    downloadsService: Pick<DownloadsService, 'startDownload'> & {
+        isAvailable?: () => boolean;
+    };
     fetchMovieFileId: (id: string) => Promise<string | number | null>;
     fetchLinkToPlay: (
         portalUrl: string,
@@ -111,17 +118,133 @@ function people(
         : textList(fallback)?.map((name) => ({ name }));
 }
 
+function hasDesktopDownloads(
+    downloadsService: StalkerVodDownloadDeps['downloadsService']
+): boolean {
+    const available = downloadsService.isAvailable;
+    return typeof available === 'function' ? available() : true;
+}
+
+/** Catalog meta uses `id`; the store playlist uses `_id`. */
+export function toStalkerVodDownloadPlaylist(
+    playlist:
+        | {
+              id?: string;
+              _id?: string;
+              title?: string;
+              portalUrl?: string;
+              macAddress?: string;
+              userAgent?: string;
+              referer?: string;
+              referrer?: string;
+              origin?: string;
+          }
+        | null
+        | undefined
+): StalkerVodDownloadPlaylist | null {
+    const id = playlist?.id || playlist?._id;
+    if (!playlist || !id) {
+        return null;
+    }
+    return {
+        id,
+        title: playlist.title,
+        portalUrl: playlist.portalUrl,
+        macAddress: playlist.macAddress,
+        userAgent: playlist.userAgent,
+        referer: playlist.referer ?? playlist.referrer,
+        origin: playlist.origin,
+    };
+}
+
+export async function queueStalkerMovieDownload(
+    item: VodDetailsItem,
+    deps: StalkerVodDownloadDeps,
+    notice: {
+        open: (message: string) => void;
+        instant: (key: string) => string;
+    }
+): Promise<void> {
+    const pwa = !hasDesktopDownloads(deps.downloadsService);
+    try {
+        const queued = await startStalkerVodDownload(item, deps);
+        if (pwa && queued) {
+            notice.open(notice.instant('DOWNLOADS.STATUS.QUEUED'));
+        }
+    } catch {
+        if (pwa) {
+            notice.open(notice.instant('DOWNLOADS.ACTION_FAILED'));
+        }
+    }
+}
+
+export function queueStalkerMovieDownloadFromStore(
+    item: VodDetailsItem,
+    store: {
+        currentPlaylist: () => Parameters<
+            typeof toStalkerVodDownloadPlaylist
+        >[0];
+        fetchMovieFileId: (id: string) => Promise<string | number | null>;
+        fetchLinkToPlay: (
+            portalUrl: string,
+            macAddress: string,
+            cmd: string,
+            series?: number,
+            linkFlags?: StalkerLinkFlagSource | null
+        ) => Promise<string | null>;
+    },
+    downloadsService: StalkerVodDownloadDeps['downloadsService'],
+    ui: {
+        snackBar: {
+            open: (
+                message: string,
+                action?: string,
+                config?: { duration?: number }
+            ) => void;
+        };
+        translate: {
+            currentLang?: string;
+            defaultLang?: string;
+            instant: (key: string) => string;
+        };
+    }
+): Promise<void> {
+    return queueStalkerMovieDownload(
+        item,
+        {
+            playlist: toStalkerVodDownloadPlaylist(store.currentPlaylist()),
+            downloadsService,
+            fetchMovieFileId: (id) => store.fetchMovieFileId(id),
+            fetchLinkToPlay: (portalUrl, macAddress, cmd, linkFlags) =>
+                store.fetchLinkToPlay(
+                    portalUrl,
+                    macAddress,
+                    cmd,
+                    undefined,
+                    linkFlags
+                ),
+            language:
+                ui.translate.currentLang || ui.translate.defaultLang || 'en',
+        },
+        {
+            open: (message) =>
+                ui.snackBar.open(message, undefined, { duration: 2000 }),
+            instant: (key) => ui.translate.instant(key),
+        }
+    );
+}
+
 export async function startStalkerVodDownload(
     item: VodDetailsItem,
     deps: StalkerVodDownloadDeps
-): Promise<void> {
+): Promise<boolean> {
     if (item.type !== 'stalker') {
-        return;
+        return false;
     }
 
     const { playlist } = deps;
     if (!playlist?.portalUrl || !playlist.macAddress) {
-        return;
+        return false;
     }
 
     const itemData = item.data as DownloadVodData;
@@ -155,7 +278,17 @@ export async function startStalkerVodDownload(
         linkFlags
     );
     if (!url) {
-        return;
+        return false;
+    }
+
+    if (!hasDesktopDownloads(deps.downloadsService)) {
+        const jobUrl = toPwaVodM3u8Url(url);
+        const jobTitle = toPwaVodDownloadTitle(downloadTitle);
+        if (!jobUrl || !jobTitle) {
+            return false;
+        }
+        await queuePwaVodDownloadJob({ url: jobUrl, title: jobTitle });
+        return true;
     }
 
     await deps.downloadsService.startDownload({
@@ -197,6 +330,7 @@ export async function startStalkerVodDownload(
         portalUrl: playlist.portalUrl,
         macAddress: playlist.macAddress,
     });
+    return true;
 }
 
 /**

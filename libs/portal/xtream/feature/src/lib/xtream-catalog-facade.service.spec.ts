@@ -1,12 +1,17 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
+    PWA_VOD_DOWNLOAD_JOBS_URL,
     PortalCatalogSortMode,
 } from '@iptvnator/portal/shared/util';
 import {
     XtreamPlaylistData,
     XtreamStore,
+    XtreamUrlService,
 } from '@iptvnator/portal/xtream/data-access';
+import { RuntimeCapabilitiesService } from '@iptvnator/services';
+import { TranslateService } from '@ngx-translate/core';
 import { XtreamCatalogFacadeService } from './xtream-catalog-facade.service';
 
 const PLAYLIST_ONE: XtreamPlaylistData = {
@@ -81,6 +86,15 @@ describe('XtreamCatalogFacadeService', () => {
         getProgressPercent: jest.fn().mockReturnValue(40),
         isWatched: jest.fn().mockReturnValue(false),
     };
+    const runtime = { isPwa: true };
+    const xtreamUrlService = {
+        constructVodUrl: jest
+            .fn()
+            .mockReturnValue(
+                'http://localhost:3000/movie/user/secret/1.m3u8'
+            ),
+    };
+    const snackBar = { open: jest.fn() };
 
     beforeEach(() => {
         localStorage.removeItem('xtream-category-sort-mode');
@@ -111,6 +125,9 @@ describe('XtreamCatalogFacadeService', () => {
         xtreamStore.hasSeriesProgress.mockClear();
         xtreamStore.getProgressPercent.mockClear();
         xtreamStore.isWatched.mockClear();
+        xtreamUrlService.constructVodUrl.mockClear();
+        snackBar.open.mockClear();
+        runtime.isPwa = true;
 
         TestBed.configureTestingModule({
             providers: [
@@ -118,6 +135,22 @@ describe('XtreamCatalogFacadeService', () => {
                 {
                     provide: XtreamStore,
                     useValue: xtreamStore,
+                },
+                {
+                    provide: XtreamUrlService,
+                    useValue: xtreamUrlService,
+                },
+                {
+                    provide: RuntimeCapabilitiesService,
+                    useValue: runtime,
+                },
+                {
+                    provide: MatSnackBar,
+                    useValue: snackBar,
+                },
+                {
+                    provide: TranslateService,
+                    useValue: { instant: (key: string) => key },
                 },
             ],
         });
@@ -267,5 +300,69 @@ describe('XtreamCatalogFacadeService', () => {
         service.setMinRating(9);
 
         expect(xtreamStore.setMinRating).not.toHaveBeenCalled();
+    });
+
+    it('queues a PWA movie download job without changing playback', async () => {
+        const fetchMock = jest
+            .fn()
+            .mockResolvedValue({ ok: true, status: 200 });
+        const originalFetch = globalThis.fetch;
+        globalThis.fetch = fetchMock as typeof fetch;
+
+        try {
+            await service.queuePwaVodDownload({
+                xtream_id: 1,
+                title: 'Catalog movie',
+            });
+        } finally {
+            globalThis.fetch = originalFetch;
+        }
+
+        expect(xtreamUrlService.constructVodUrl).toHaveBeenCalledWith(
+            PLAYLIST_ONE,
+            expect.objectContaining({
+                stream_id: 1,
+                container_extension: 'm3u8',
+            })
+        );
+        expect(fetchMock).toHaveBeenCalledWith(PWA_VOD_DOWNLOAD_JOBS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                url: 'http://localhost:3000/movie/user/secret/1.m3u8',
+                title: 'Catalog movie.mp4',
+            }),
+        });
+        expect(snackBar.open).toHaveBeenCalledWith(
+            'DOWNLOADS.STATUS.QUEUED',
+            undefined,
+            { duration: 2000 }
+        );
+    });
+
+    it('does not queue PWA download jobs for series or Electron', async () => {
+        const fetchMock = jest.fn();
+        const originalFetch = globalThis.fetch;
+        globalThis.fetch = fetchMock as typeof fetch;
+
+        try {
+            contentType.set('series');
+            await service.queuePwaVodDownload({
+                xtream_id: 1,
+                title: 'A series',
+            });
+
+            contentType.set('vod');
+            runtime.isPwa = false;
+            await service.queuePwaVodDownload({
+                xtream_id: 1,
+                title: 'Catalog movie',
+            });
+        } finally {
+            globalThis.fetch = originalFetch;
+        }
+
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(xtreamUrlService.constructVodUrl).not.toHaveBeenCalled();
     });
 });

@@ -96,7 +96,7 @@
                     isFavorite() ? 'favorite' : 'favorite_border'
                 }}</mat-icon>
             </button>
-            @if (isElectron() && !providerOnly()) {
+            @if (!providerOnly()) {
                 @if (isDownloaded()) {
                     <button
                         type="button"

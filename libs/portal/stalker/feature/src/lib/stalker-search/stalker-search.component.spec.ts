@@ -18,7 +18,11 @@ import {
     StalkerStore,
 } from '@iptvnator/portal/stalker/data-access';
 import { createPlaybackSessionKey } from '@iptvnator/playback/util';
-import { DataService, PlaylistsService } from '@iptvnator/services';
+import {
+    DataService,
+    DownloadsService,
+    PlaylistsService,
+} from '@iptvnator/services';
 import { CONNECTIVITY_GUARD_RESET } from '@iptvnator/shared/interfaces';
 import type { ResolvedPortalPlayback } from '@iptvnator/shared/interfaces';
 import { StalkerSearchComponent } from './stalker-search.component';
@@ -96,6 +100,7 @@ describe('StalkerSearchComponent playback session key', () => {
                     provide: PlaylistsService,
                     useValue: { getPortalFavorites: () => of([]) },
                 },
+                { provide: DownloadsService, useValue: {} },
                 {
                     provide: StalkerStore,
                     useValue: {
@@ -329,6 +334,7 @@ describe('StalkerSearchComponent result paging', () => {
                     provide: PlaylistsService,
                     useValue: { getPortalFavorites: () => of([]) },
                 },
+                { provide: DownloadsService, useValue: {} },
                 {
                     provide: StalkerStore,
                     useValue: {
