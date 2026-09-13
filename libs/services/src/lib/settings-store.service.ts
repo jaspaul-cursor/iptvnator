@@ -194,6 +194,14 @@ export const SettingsStore = signalStore(
                                 );
                             }
                         );
+                        void this.sanitizeStreamHandoffSelection().catch(
+                            (error) => {
+                                console.warn(
+                                    'Failed to reset stream handoff on unsupported runtimes.',
+                                    error
+                                );
+                            }
+                        );
                     }
                     await epgSources
                         .synchronize(this.getSettings().epgUrl)
@@ -397,8 +405,21 @@ export const SettingsStore = signalStore(
                     store.player() === VideoPlayer.VideoJs ||
                     store.player() === VideoPlayer.Html5Player ||
                     store.player() === VideoPlayer.ArtPlayer ||
-                    store.player() === VideoPlayer.EmbeddedMpv
+                    store.player() === VideoPlayer.EmbeddedMpv ||
+                    store.player() === VideoPlayer.StreamHandoff
                 );
+            },
+
+            async sanitizeStreamHandoffSelection() {
+                if (store.player() !== VideoPlayer.StreamHandoff) {
+                    return;
+                }
+
+                if (typeof window !== 'undefined' && window.electron) {
+                    await this.updateSettings({
+                        player: DEFAULT_SETTINGS.player,
+                    });
+                }
             },
 
             async sanitizeEmbeddedMpvSelection() {

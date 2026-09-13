@@ -7,6 +7,7 @@ import type {
 export interface PlaybackApplicationOwnership {
     readonly binding: PlaybackBinding | null;
     readonly embeddedMpv: boolean;
+    readonly streamHandoff: boolean;
     readonly isLive: boolean;
     readonly sourceRevision: WebPlayerSourceRevisionToken;
     readonly token: WebPlayerApplicationToken;
@@ -18,6 +19,7 @@ export function ownsPlaybackApplication(options: {
     readonly currentSourceRevision: WebPlayerSourceRevisionToken;
     readonly bindingOwned: boolean;
     readonly embeddedMpvSelected: boolean;
+    readonly streamHandoffSelected: boolean;
 }): boolean {
     const { ownership } = options;
     if (
@@ -27,7 +29,14 @@ export function ownsPlaybackApplication(options: {
         return false;
     }
     if (ownership.binding) {
-        return !ownership.embeddedMpv && options.bindingOwned;
+        return (
+            !ownership.embeddedMpv &&
+            !ownership.streamHandoff &&
+            options.bindingOwned
+        );
     }
-    return ownership.embeddedMpv && options.embeddedMpvSelected;
+    if (ownership.embeddedMpv) {
+        return options.embeddedMpvSelected;
+    }
+    return ownership.streamHandoff && options.streamHandoffSelected;
 }

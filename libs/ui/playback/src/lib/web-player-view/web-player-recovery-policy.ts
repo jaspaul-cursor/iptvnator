@@ -203,6 +203,7 @@ export function toInlinePlaybackPlayer(
         case VideoPlayer.ArtPlayer:
             return InlinePlaybackPlayer.ArtPlayer;
         case VideoPlayer.EmbeddedMpv:
+        case VideoPlayer.StreamHandoff:
         case VideoPlayer.MPV:
         case VideoPlayer.VLC:
             return null;
@@ -222,5 +223,8 @@ export function resolveRenderableWebPlayer(
 ): VideoPlayer {
     const external =
         configured === VideoPlayer.MPV || configured === VideoPlayer.VLC;
-    return external && previous ? previous.value : configured;
+    if (external && previous) {
+        return previous.value;
+    }
+    return configured;
 }

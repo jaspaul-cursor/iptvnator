@@ -718,6 +718,7 @@ describe('WebPlayerViewComponent recovery integration', () => {
         expect(Object.keys(ownership)).toEqual([
             'binding',
             'embeddedMpv',
+            'streamHandoff',
             'isLive',
             'sourceRevision',
             'token',

@@ -87,6 +87,8 @@
                 ></div>
             }
         }
+    } @else if (application.streamHandoff) {
+        <app-stream-handoff-panel [playback]="resolvedPlayback()" />
     } @else if (application.embeddedMpv) {
         <app-embedded-mpv-player
             #embeddedMpvPlayer

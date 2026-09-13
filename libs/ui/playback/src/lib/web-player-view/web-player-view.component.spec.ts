@@ -108,6 +108,14 @@ class StubArtPlayerComponent {
 }
 
 @Component({
+    selector: 'app-stream-handoff-panel',
+    template: '<div data-test-id="stub-stream-handoff-panel"></div>',
+})
+class StubStreamHandoffPanelComponent {
+    readonly playback = input.required<unknown>();
+}
+
+@Component({
     selector: 'app-embedded-mpv-player',
     template: '<div data-test-id="stub-embedded-mpv-player"></div>',
 })
@@ -164,6 +172,7 @@ describe('WebPlayerViewComponent', () => {
                         StubEmbeddedMpvPlayerComponent,
                         StubFullscreenChannelPanelComponent,
                         StubHtmlVideoPlayerComponent,
+                        StubStreamHandoffPanelComponent,
                         StubVjsPlayerComponent,
                         PlaybackDiagnosticPanelComponent,
                         // Real, not stubbed: the point of the test below is
@@ -631,6 +640,23 @@ describe('WebPlayerViewComponent', () => {
             By.directive(StubEmbeddedMpvPlayerComponent)
         ).componentInstance as StubEmbeddedMpvPlayerComponent;
         expect(player.recordingFolder()).toBe('');
+    });
+
+    it('renders the stream handoff panel instead of an inline player', () => {
+        fixture.componentRef.setInput(
+            'playerOverride',
+            VideoPlayer.StreamHandoff
+        );
+        fixture.detectChanges();
+
+        expect(
+            fixture.debugElement.query(By.directive(StubVjsPlayerComponent))
+        ).toBeNull();
+        expect(
+            fixture.debugElement.query(
+                By.directive(StubStreamHandoffPanelComponent)
+            )
+        ).not.toBeNull();
     });
 
     describe('saved player changes', () => {

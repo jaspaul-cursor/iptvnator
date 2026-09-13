@@ -95,6 +95,11 @@ export const SETTINGS_MPV_PLAYER_OPTION: SettingsPlayerOption = {
     labelKey: 'SETTINGS.PLAYER_MPV',
 };
 
+export const SETTINGS_STREAM_HANDOFF_PLAYER_OPTION: SettingsPlayerOption = {
+    id: VideoPlayer.StreamHandoff,
+    labelKey: 'SETTINGS.PLAYER_STREAM_HANDOFF',
+};
+
 export const SETTINGS_OS_PLAYER_OPTIONS: SettingsPlayerOption[] = [
     SETTINGS_MPV_PLAYER_OPTION,
     {
@@ -138,7 +143,7 @@ export function buildSettingsPlayerOptions({
     const externalPlayers = supportsManagedExternalPlayers
         ? SETTINGS_OS_PLAYER_OPTIONS
         : isPwa
-          ? [SETTINGS_MPV_PLAYER_OPTION]
+          ? [SETTINGS_STREAM_HANDOFF_PLAYER_OPTION, SETTINGS_MPV_PLAYER_OPTION]
           : [];
 
     return [

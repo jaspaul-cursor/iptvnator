@@ -1,0 +1,76 @@
+<section
+    class="stream-handoff"
+    data-test-id="stream-handoff-panel"
+    [attr.aria-label]="'STREAM_HANDOFF.TITLE' | translate"
+>
+    <div class="stream-handoff__content">
+        @if (title(); as mediaTitle) {
+            <h2 class="stream-handoff__title">{{ mediaTitle }}</h2>
+        }
+        <p class="stream-handoff__description">
+            {{ 'STREAM_HANDOFF.DESCRIPTION' | translate }}
+        </p>
+
+        <div class="stream-handoff__actions">
+            <button
+                mat-stroked-button
+                type="button"
+                class="stream-handoff__action"
+                data-test-id="stream-handoff-copy-url"
+                [cdkCopyToClipboard]="streamUrl()"
+                [matTooltip]="streamUrl()"
+                (cdkCopyToClipboardCopied)="onStreamUrlCopied($event)"
+            >
+                <mat-icon aria-hidden="true">content_copy</mat-icon>
+                {{ 'PLAYBACK_DIAGNOSTICS.ACTION_COPY_URL' | translate }}
+            </button>
+
+            @if (canOpenMpv()) {
+                <button
+                    mat-stroked-button
+                    type="button"
+                    class="stream-handoff__action"
+                    data-test-id="stream-handoff-open-mpv"
+                    (click)="openStreamInMpv()"
+                >
+                    <mat-icon aria-hidden="true">play_circle</mat-icon>
+                    {{ 'PORTALS.OPEN_IN_MPV' | translate }}
+                </button>
+            }
+
+            @if (showRelayActions()) {
+                <button
+                    mat-stroked-button
+                    type="button"
+                    class="stream-handoff__action"
+                    data-test-id="stream-handoff-copy-relay-url"
+                    [cdkCopyToClipboard]="relayUrl()"
+                    [matTooltip]="relayUrl()"
+                    (cdkCopyToClipboardCopied)="onRelayUrlCopied($event)"
+                >
+                    <mat-icon aria-hidden="true">content_copy</mat-icon>
+                    {{
+                        'PLAYBACK_DIAGNOSTICS.ACTION_COPY_RELAY_URL'
+                            | translate
+                    }}
+                </button>
+
+                @if (canOpenMpv()) {
+                    <button
+                        mat-stroked-button
+                        type="button"
+                        class="stream-handoff__action"
+                        data-test-id="stream-handoff-open-relay-mpv"
+                        (click)="openRelayInMpv()"
+                    >
+                        <mat-icon aria-hidden="true">play_circle</mat-icon>
+                        {{
+                            'PLAYBACK_DIAGNOSTICS.ACTION_OPEN_RELAY_MPV'
+                                | translate
+                        }}
+                    </button>
+                }
+            }
+        </div>
+    </div>
+</section>
