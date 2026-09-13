@@ -1594,7 +1594,9 @@ export class VideoPlayerComponent
 
         const player = this.playerSettings.player;
         return (
-            !this.isExternalPlayer(player) && player !== VideoPlayer.EmbeddedMpv
+            !this.isExternalPlayer(player) &&
+            player !== VideoPlayer.EmbeddedMpv &&
+            player !== VideoPlayer.StreamHandoff
         );
     }
 

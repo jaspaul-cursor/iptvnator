@@ -313,6 +313,7 @@
         "PLAYER_ARTPLAYER": "ArtPlayer",
         "PLAYER_EMBEDDED_MPV": "Embedded MPV (Experimental)",
         "PLAYER_MPV": "MPV player",
+        "PLAYER_STREAM_HANDOFF": "Stream handoff",
         "PLAYER_VLC": "VLC",
         "VIDEO_PLAYER_PLACEHOLDER": "Select an option",
         "VERSION": "Version",
@@ -531,6 +532,10 @@
         "MUTE": "Mute",
         "UNMUTE": "Unmute",
         "VOLUME": "Volume"
+    },
+    "STREAM_HANDOFF": {
+        "TITLE": "Stream handoff",
+        "DESCRIPTION": "Copy the stream or relay URL, or open it in MPV. IPTVnator does not play the stream inline in this mode."
     },
     "EMBEDDED_MPV": {
         "PLAYER": {

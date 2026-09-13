@@ -28,7 +28,8 @@ export class PlayerService {
             player === VideoPlayer.VideoJs ||
             player === VideoPlayer.Html5Player ||
             player === VideoPlayer.ArtPlayer ||
-            player === VideoPlayer.EmbeddedMpv
+            player === VideoPlayer.EmbeddedMpv ||
+            player === VideoPlayer.StreamHandoff
         );
     }
 

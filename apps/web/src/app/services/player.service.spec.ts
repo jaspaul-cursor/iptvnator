@@ -48,6 +48,9 @@ describe('PlayerService', () => {
         expect(service.isEmbeddedPlayer(VideoPlayer.Html5Player)).toBe(true);
         expect(service.isEmbeddedPlayer(VideoPlayer.ArtPlayer)).toBe(true);
         expect(service.isEmbeddedPlayer(VideoPlayer.EmbeddedMpv)).toBe(true);
+        expect(service.isEmbeddedPlayer(VideoPlayer.StreamHandoff)).toBe(
+            true
+        );
         expect(service.isEmbeddedPlayer(VideoPlayer.MPV)).toBe(false);
         expect(service.isEmbeddedPlayer(VideoPlayer.VLC)).toBe(false);
     });

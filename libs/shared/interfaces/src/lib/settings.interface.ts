@@ -10,6 +10,8 @@ export enum VideoPlayer {
     VideoJs = 'videojs',
     Html5Player = 'html5',
     EmbeddedMpv = 'embedded-mpv',
+    /** PWA-only: show copy/open handoff actions instead of inline playback. */
+    StreamHandoff = 'stream-handoff',
     MPV = 'mpv',
     VLC = 'vlc',
     ArtPlayer = 'artplayer',

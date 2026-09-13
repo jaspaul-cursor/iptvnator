@@ -41,6 +41,7 @@ import {
     WEB_PLAYER_SHARED_CONTROLS_ENABLED,
 } from '../player-controls';
 import type { SeriesPlaybackNavigation } from '../portal-inline-player/series-playback-navigation';
+import { StreamHandoffPanelComponent } from '../stream-handoff-panel/stream-handoff-panel.component';
 import { VjsPlayerComponent } from '../vjs-player/vjs-player.component';
 import type { VideoPlayerOptions } from '../vjs-player/vjs-player.types';
 import { ElectronStreamHeadersService } from './electron-stream-headers.service';
@@ -83,6 +84,7 @@ function resolveWebPlayerSharedControls(): boolean {
         FullscreenChannelPanelComponent,
         HtmlVideoPlayerComponent,
         PlaybackDiagnosticPanelComponent,
+        StreamHandoffPanelComponent,
         VjsPlayerComponent,
     ],
     providers: [
@@ -271,7 +273,9 @@ export class WebPlayerViewComponent implements OnDestroy {
         const binding = this.activeBinding();
         const embeddedMpv =
             this.selectedPlayer() === VideoPlayer.EmbeddedMpv && !binding;
-        if (!binding && !embeddedMpv) {
+        const streamHandoff =
+            this.selectedPlayer() === VideoPlayer.StreamHandoff && !binding;
+        if (!binding && !embeddedMpv && !streamHandoff) {
             return [];
         }
 
@@ -279,6 +283,7 @@ export class WebPlayerViewComponent implements OnDestroy {
             Object.freeze({
                 binding,
                 embeddedMpv,
+                streamHandoff,
                 isLive: this.resolvedIsLive(),
                 sourceRevision: this.playbackSourceRevisionToken(),
                 token: this.playbackApplicationToken(),
@@ -375,6 +380,8 @@ export class WebPlayerViewComponent implements OnDestroy {
                     : false,
                 embeddedMpvSelected:
                     this.selectedPlayer() === VideoPlayer.EmbeddedMpv,
+                streamHandoffSelected:
+                    this.selectedPlayer() === VideoPlayer.StreamHandoff,
             })
         ) {
             return;

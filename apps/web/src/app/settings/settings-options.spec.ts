@@ -114,6 +114,7 @@ describe('buildSettingsPlayerOptions', () => {
             VideoPlayer.Html5Player,
             VideoPlayer.VideoJs,
             VideoPlayer.ArtPlayer,
+            VideoPlayer.StreamHandoff,
             VideoPlayer.MPV,
         ]);
     });

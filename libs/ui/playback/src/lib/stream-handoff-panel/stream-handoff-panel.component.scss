@@ -1,0 +1,67 @@
+:host {
+    display: block;
+    height: 100%;
+}
+
+.stream-handoff {
+    display: flex;
+    height: 100%;
+    min-height: 200px;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(16px, 4vw, 32px);
+    overflow: auto;
+    background: #000;
+    color: #f6f6f6;
+}
+
+.stream-handoff__content {
+    width: min(100%, 420px);
+    min-width: 0;
+}
+
+.stream-handoff__title {
+    margin: 0;
+    overflow: hidden;
+    color: #fff;
+    font-size: clamp(1.1rem, 4vw, 1.35rem);
+    font-weight: 700;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.stream-handoff__description {
+    margin: 10px 0 0;
+    color: rgb(255 255 255 / 72%);
+    font-size: 0.95rem;
+    line-height: 1.45;
+}
+
+.stream-handoff__actions {
+    display: grid;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.stream-handoff__action {
+    width: 100%;
+    min-height: 44px;
+    justify-content: flex-start;
+    gap: 8px;
+    padding-inline: 14px;
+    border-color: rgb(255 255 255 / 24%) !important;
+    color: #f6f6f6 !important;
+}
+
+.stream-handoff__action mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+}
+
+@container (min-width: 480px) {
+    .stream-handoff__actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
