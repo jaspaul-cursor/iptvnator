@@ -1,20 +1,9 @@
 name: docker-build
 
+# Automatic Docker builds are intentionally disabled. Restore the push and
+# pull_request triggers below to re-enable them. Manual runs stay available via
+# workflow_dispatch.
 on:
-    pull_request:
-        paths:
-            - '.github/workflows/docker.yml'
-            - 'apps/web/**'
-            - 'apps/web-backend/**'
-            - 'docker/**'
-            - 'libs/**'
-            - 'package.json'
-            - 'pnpm-lock.yaml'
-    push:
-        branches:
-            - master
-        tags:
-            - 'v*'
     workflow_dispatch:
         inputs:
             push:
@@ -22,6 +11,20 @@ on:
                 required: true
                 type: boolean
                 default: false
+    # pull_request:
+    #     paths:
+    #         - '.github/workflows/docker.yml'
+    #         - 'apps/web/**'
+    #         - 'apps/web-backend/**'
+    #         - 'docker/**'
+    #         - 'libs/**'
+    #         - 'package.json'
+    #         - 'pnpm-lock.yaml'
+    # push:
+    #     branches:
+    #         - master
+    #     tags:
+    #         - 'v*'
 
 permissions:
     contents: read

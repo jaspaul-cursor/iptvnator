@@ -23,6 +23,7 @@ import {
 import {
     OPEN_MPV_PLAYER,
     VideoPlayer,
+    buildStreamRelayUrl,
     canOpenViaMpvProtocol,
     type ResolvedPortalPlayback,
     type VodSourceDescriptor,
@@ -108,18 +109,24 @@ export class PlaybackDiagnosticPanelComponent {
             ? 'PLAYBACK_DIAGNOSTICS.REPORT_COPIED'
             : 'PLAYBACK_DIAGNOSTICS.COPY_FAILED';
     });
+    readonly relayUrl = computed(() =>
+        buildStreamRelayUrl(this.playback().streamUrl ?? '')
+    );
     readonly showOpenInMpv = computed(
         () =>
             this.settingsStore.player?.() !== VideoPlayer.MPV &&
             canOpenViaMpvProtocol(this.playback().streamUrl)
+    );
+    readonly showRelayActions = computed(() => this.relayUrl() !== null);
+    readonly showOpenRelayInMpv = computed(
+        () => this.showOpenInMpv() && this.showRelayActions()
     );
 
     onReportCopied(success: boolean): void {
         this.copyResult.set({ issue: this.diagnostic(), success });
     }
 
-    openInMpv(): void {
-        const url = this.playback().streamUrl;
+    openInMpv(url = this.playback().streamUrl): void {
         if (!this.showOpenInMpv() || !url) {
             return;
         }
@@ -128,6 +135,15 @@ export class PlaybackDiagnosticPanelComponent {
             url,
             title: this.playback().title,
         });
+    }
+
+    openRelayInMpv(): void {
+        const relayUrl = this.relayUrl();
+        if (!this.showOpenRelayInMpv() || !relayUrl) {
+            return;
+        }
+
+        this.openInMpv(relayUrl);
     }
 
     readonly visibleAlternatives = computed(() =>

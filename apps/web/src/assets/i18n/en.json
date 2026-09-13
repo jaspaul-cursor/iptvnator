@@ -681,6 +681,8 @@
         "ACTION_OPEN_MPV_HINT": "configured player",
         "ACTION_OPEN_VLC_HINT": "configured player",
         "ACTION_COPY_URL": "Copy stream URL",
+        "ACTION_COPY_RELAY_URL": "Copy relay URL",
+        "ACTION_OPEN_RELAY_MPV": "Open relay in MPV",
         "ACTION_RETRY": "Retry",
         "DETAILS_SUMMARY": "Technical details",
         "CODEC_HINT": "Detected {{codecs}}. Chromium/Electron browser players often have limited support for these codecs.",

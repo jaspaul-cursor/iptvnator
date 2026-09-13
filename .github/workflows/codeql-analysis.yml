@@ -5,14 +5,18 @@
 # or to provide custom queries or build logic.
 name: "CodeQL"
 
+# Automatic CodeQL runs are intentionally disabled. Restore the push,
+# pull_request, and schedule triggers below to re-enable them. Manual runs stay
+# available via workflow_dispatch.
 on:
-  push:
-    branches: [master]
-  pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [master]
-  schedule:
-    - cron: '0 20 * * 3'
+  workflow_dispatch:
+  # push:
+  #   branches: [master]
+  # pull_request:
+  #   # The branches below must be a subset of the branches above
+  #   branches: [master]
+  # schedule:
+  #   - cron: '0 20 * * 3'
 
 # Required so `codeql-action/analyze` can upload its SARIF results. Without an
 # explicit grant the default token is read-only and the upload fails with
