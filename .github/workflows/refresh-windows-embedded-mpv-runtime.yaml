@@ -1,8 +1,9 @@
 name: Refresh Windows Embedded MPV Runtime Pin
 
+# Scheduled refresh runs are intentionally disabled. Restore the schedule trigger
+# below to re-enable weekly updates. Manual runs stay available via
+# workflow_dispatch.
 on:
-    schedule:
-        - cron: '17 6 * * 1'
     workflow_dispatch:
         inputs:
             force:
@@ -10,6 +11,8 @@ on:
                 required: false
                 default: false
                 type: boolean
+    # schedule:
+    #     - cron: '17 6 * * 1'
 
 permissions:
     contents: read

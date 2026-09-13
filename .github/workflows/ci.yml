@@ -1,13 +1,16 @@
 name: CI
 
+# Automatic CI is intentionally disabled. Restore the push/pull_request triggers
+# below to re-enable PR and master checks. Manual runs stay available via
+# workflow_dispatch.
 on:
-    push:
-        branches:
-            - master
-    pull_request:
-        branches:
-            - master
     workflow_dispatch:
+    # push:
+    #     branches:
+    #         - master
+    # pull_request:
+    #     branches:
+    #         - master
 
 # Superseded PR pushes cancel their still-running checks. Non-PR runs get a
 # unique group (run_id) because GitHub keeps at most one pending run per

@@ -13,28 +13,31 @@ name: Build and Make Electron App
 # cleanup-pr-draft.yml deletes the draft when the PR closes, so the stale
 # window is visible and bounded; refreshing drafts on skipped runs is not
 # worth a separate workflow.
+# Automatic build/make runs are intentionally disabled. Restore the
+# push/pull_request triggers below to re-enable them. Manual runs stay
+# available via workflow_dispatch.
 on:
-    push:
-        branches:
-            - master
-        tags:
-            - 'v*.*.*'
-        paths-ignore:
-            - '**/*.md'
-            - 'docs/**'
-            - '.plans/**'
-            - '.codex/**'
-            - '.claude/**'
-    pull_request:
-        branches:
-            - master
-        paths-ignore:
-            - '**/*.md'
-            - 'docs/**'
-            - '.plans/**'
-            - '.codex/**'
-            - '.claude/**'
     workflow_dispatch:
+    # push:
+    #     branches:
+    #         - master
+    #     tags:
+    #         - 'v*.*.*'
+    #     paths-ignore:
+    #         - '**/*.md'
+    #         - 'docs/**'
+    #         - '.plans/**'
+    #         - '.codex/**'
+    #         - '.claude/**'
+    # pull_request:
+    #     branches:
+    #         - master
+    #     paths-ignore:
+    #         - '**/*.md'
+    #         - 'docs/**'
+    #         - '.plans/**'
+    #         - '.codex/**'
+    #         - '.claude/**'
 
 # Build jobs only read the repo; the create-release job raises itself to
 # contents: write at the job level to manage the rolling draft release.
