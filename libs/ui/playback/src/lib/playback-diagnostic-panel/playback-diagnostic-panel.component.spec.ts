@@ -16,6 +16,7 @@ import {
 } from '@iptvnator/playback/util';
 import {
     VideoPlayer,
+    STREAM_RELAY_PROXY_BASE_URL,
     type ResolvedPortalPlayback,
     type VodSourceDescriptor,
 } from '@iptvnator/shared/interfaces';
@@ -556,6 +557,9 @@ describe('PlaybackDiagnosticPanelComponent', () => {
         const copy = fixture.nativeElement.querySelector(
             '[data-test-id="playback-copy-url"]'
         ) as HTMLButtonElement;
+        const copyRelay = fixture.nativeElement.querySelector(
+            '[data-test-id="playback-copy-relay-url"]'
+        ) as HTMLButtonElement;
         const details = fixture.nativeElement.querySelector(
             '[data-test-id="playback-diagnostic-details"]'
         ) as HTMLDetailsElement;
@@ -565,11 +569,22 @@ describe('PlaybackDiagnosticPanelComponent', () => {
         expect(copy.textContent).toContain(
             'PLAYBACK_DIAGNOSTICS.ACTION_COPY_URL'
         );
+        expect(copyRelay).not.toBeNull();
+        expect(copyRelay.textContent).toContain(
+            'PLAYBACK_DIAGNOSTICS.ACTION_COPY_RELAY_URL'
+        );
         const openInMpv = fixture.nativeElement.querySelector(
             '[data-test-id="playback-open-in-mpv"]'
         ) as HTMLButtonElement;
         expect(openInMpv).not.toBeNull();
         expect(openInMpv.textContent).toContain('Open in MPV');
+        const openRelayInMpv = fixture.nativeElement.querySelector(
+            '[data-test-id="playback-open-relay-in-mpv"]'
+        ) as HTMLButtonElement;
+        expect(openRelayInMpv).not.toBeNull();
+        expect(openRelayInMpv.textContent).toContain(
+            'PLAYBACK_DIAGNOSTICS.ACTION_OPEN_RELAY_MPV'
+        );
         expect(details).not.toBeNull();
         expect(details.textContent).toContain(
             'PLAYBACK_DIAGNOSTICS.DETAILS_SUMMARY'
@@ -590,6 +605,22 @@ describe('PlaybackDiagnosticPanelComponent', () => {
         });
     });
 
+    it('opens the relay URL in MPV when another player is selected', () => {
+        fixture.detectChanges();
+
+        const openRelayInMpv = fixture.nativeElement.querySelector(
+            '[data-test-id="playback-open-relay-in-mpv"]'
+        ) as HTMLButtonElement;
+        openRelayInMpv.click();
+
+        expect(sendIpcEvent).toHaveBeenCalledWith('OPEN_MPV_PLAYER', {
+            url: `${STREAM_RELAY_PROXY_BASE_URL}?url=${encodeURIComponent(
+                PLAYBACK.streamUrl
+            )}`,
+            title: PLAYBACK.title,
+        });
+    });
+
     it('hides Open in MPV when MPV is already the saved player', () => {
         player.set(VideoPlayer.MPV);
         fixture.detectChanges();
@@ -597,6 +628,11 @@ describe('PlaybackDiagnosticPanelComponent', () => {
         expect(
             fixture.nativeElement.querySelector(
                 '[data-test-id="playback-open-in-mpv"]'
+            )
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector(
+                '[data-test-id="playback-open-relay-in-mpv"]'
             )
         ).toBeNull();
     });

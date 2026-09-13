@@ -199,6 +199,21 @@
                 <mat-icon aria-hidden="true">content_copy</mat-icon>
                 {{ 'PLAYBACK_DIAGNOSTICS.ACTION_COPY_URL' | translate }}
             </button>
+            @if (showRelayActions()) {
+                <button
+                    class="web-player-diagnostic__utility-button"
+                    type="button"
+                    [cdkCopyToClipboard]="relayUrl()"
+                    [matTooltip]="relayUrl()"
+                    data-test-id="playback-copy-relay-url"
+                >
+                    <mat-icon aria-hidden="true">content_copy</mat-icon>
+                    {{
+                        'PLAYBACK_DIAGNOSTICS.ACTION_COPY_RELAY_URL'
+                            | translate
+                    }}
+                </button>
+            }
             @if (showOpenInMpv()) {
                 <button
                     class="web-player-diagnostic__utility-button"
@@ -208,6 +223,20 @@
                 >
                     <mat-icon aria-hidden="true">play_circle</mat-icon>
                     {{ 'PORTALS.OPEN_IN_MPV' | translate }}
+                </button>
+            }
+            @if (showOpenRelayInMpv()) {
+                <button
+                    class="web-player-diagnostic__utility-button"
+                    type="button"
+                    data-test-id="playback-open-relay-in-mpv"
+                    (click)="openRelayInMpv()"
+                >
+                    <mat-icon aria-hidden="true">play_circle</mat-icon>
+                    {{
+                        'PLAYBACK_DIAGNOSTICS.ACTION_OPEN_RELAY_MPV'
+                            | translate
+                    }}
                 </button>
             }
 
